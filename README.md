@@ -116,7 +116,7 @@ Full API docs: `docs/api/README.md`
 
 ## 📱 Demo & Support
 
-- **Online Demo**: [AI Rehabilitation Training Platform Demo](https://bnstw.com/ai/)
+- **Online Demo**: [AI Rehabilitation Training Platform Demo]([https://bnstw.com/ai/](https://bnstw.com/ai/frontend/index.html))
 
 - **Help Center**: Refer to demo site documentation or contact maintainers
 
