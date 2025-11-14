@@ -1,130 +1,156 @@
 # AI Rehabilitation Training Platform
 
-## Project Introduction
-This is an open-source platform integrating speech, AI, robotics, and multi-scenario rehabilitation training. It supports various rehabilitation programs such as upper limb, lower limb, and aphasia training. With a separation of front-end and back-end architecture, it provides multi-language support and hardware integration capabilities.
+An open-source integrated platform that combines robotics technology, video technology, speech recognition, and artificial intelligence, designed for multi-scenario rehabilitation training. It supports various rehabilitation programs including upper limb, lower limb, and aphasia training, adopting a front-end and back-end separation architecture to provide multi-language support and seamless hardware integration capabilities.
 
-## Technical Architecture
-- **Backend**: Python 3.10+, FastAPI, SQLServer, TensorFlow, Vosk, pydub, librosa
-- **Frontend**: HTML5, JavaScript (Native/ES6), Tailwind CSS, Font Awesome, Chart.js, MediaPipe
-- **Hardware**: ESP32, Arduino/C++, Stepper Motors, Bluetooth, Robot Control
-- **Mobile**: Android/iOS (Flutter/Native, Reserved Interfaces)
-- **Deployment**: nginx, docker-compose
+## ✨ Key Features
 
-## Core Function Modules
-- Intelligent training plan generation and personalized recommendations
-- Pose recognition and real-time feedback (MediaPipe)
-- Speech synthesis and voice interaction (Web Speech API)
-- AI speech analysis and pronunciation evaluation (FastAPI+Vosk/TensorFlow)
-- Achievement system and training statistics
-- Multi-language support (Chinese/English)
-- Robot/hardware interfaces (Bluetooth/Serial Port)
-- Unified experience across mobile and web platforms
+- Intelligent training plan generation with personalized difficulty adaptation
 
-## Directory Structure Explanation
-```
-backend/        # Backend API, models, routes, services
-	 main.py     # FastAPI main entry
-	 main_api.py # Business data query interface
-	 routers/    # Business routes (aphasia, upper limb, lower limb, user, etc.)
-	 api/        # Interfaces for adding/editing/deleting business data
-	 aphasia/    # Speech analysis interfaces
-	 models/     # Pydantic model definitions
-	 services/   # Business logic and AI analysis
-	 ml_models/  # Trained AI models
-	 data/       # Training/test data
-	 utils.py    # Utility functions
-	 config.py   # Configuration file
-frontend/       # Frontend pages, JS, styles, images
-	 index.html  # Main page
-	 aphasia/    # Aphasia training pages
-	 lower_limb/ # Lower limb training pages
-	 upper_limb/ # Upper limb training pages
-	 static/     # Interactive scripts, style files, training images
-	 libs/       # Third-party libraries
-firmware/       # ESP32/robot firmware source code
-models/         # AI models and historical data
-mobile_app/     # Mobile app source code (reserved)
-nginx/          # Deployment and SSL certificates
+- Real-time human pose recognition & corrective feedback (powered by MediaPipe + video technology)
+
+- AI-driven speech analysis for aphasia rehabilitation (pronunciation evaluation + improvement suggestions)
+
+- Seamless robotics & hardware integration (Bluetooth/Serial Port communication)
+
+- Comprehensive training statistics & achievement unlocking system
+
+- Bilingual support (Chinese/English) & cross-platform experience (web + mobile)
+
+## 📋 Technical Architecture
+
+|Layer|Technologies & Tools|
+|---|---|
+|**Backend**|Python 3.10+, FastAPI, SQLServer, TensorFlow, Vosk, pydub, librosa|
+|**Frontend**|HTML5, JavaScript (Native/ES6), Tailwind CSS, Font Awesome, Chart.js, MediaPipe|
+|**Hardware**|ESP32, Arduino/C++, Stepper Motors, Bluetooth Modules|
+|**Mobile**|Android/iOS (Flutter/Native, Reserved Interfaces)|
+|**Deployment**|Nginx, Docker Compose|
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.10+ installed
+
+- Git installed
+
+- VSCode (recommended) with Live Server extension
+
+- ESP32 development environment (for hardware integration)
+
+### Installation Steps
+
+1. **Clone the Repository**`git clone https://github.com/your-username/ai-rehabilitation-training-platform.git
+cd ai-rehabilitation-training-platform`
+
+2. **Install Backend Dependencies**`pip install -r requirements.txt`
+
+3. **Start Backend Service**`uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000`Backend API will be available at `http://localhost:8000`
+
+4. **Launch Frontend**Open VSCode and navigate to the `frontend/` directory
+
+5. Right-click `index.html` and select "Open with Live Server"
+
+6. Access frontend at `http://localhost:5500`
+
+7. **Flash ESP32 Firmware**Refer to detailed guide: `firmware/esp32/README.md`
+
+## 📂 Directory Structure
+
+```bash
+
+backend/        # Backend core (API, models, services)
+  main.py     # FastAPI entry point
+  routers/    # Module routes (aphasia, limb training, user)
+  api/        # CRUD interfaces for business data
+  aphasia/    # Speech analysis module
+  models/     # Data models (Pydantic)
+  services/   # Business logic & AI analysis
+  ml_models/  # Pre-trained AI models
+  data/       # Training/test datasets
+
+frontend/       # Frontend pages & resources
+  index.html  # Homepage
+  aphasia/    # Aphasia training pages
+  lower_limb/ # Lower limb training pages
+  upper_limb/ # Upper limb training pages
+  static/     # Scripts, styles & images
+
+firmware/       # ESP32/robot firmware
+models/         # AI model archives
+mobile_app/     # Mobile app source (reserved)
+nginx/          # Deployment configs & SSL
 saved_models/   # Trained model files
-static/         # Static resources
-logs/           # Logs
+logs/           # Application logs
 requirements.txt# Python dependencies
-README.md       # Project description
 ```
 
-## Quick Start
-1. Install Python dependencies:
-	```bash
-	pip install -r requirements.txt
-	```
-2. Start the backend API service:
-	```bash
-	uvicorn backend.main:app --reload
-	```
-3. Launch frontend pages:
-	- Recommended: Use VSCode Live Server or local nginx deployment
-	- Access frontend/index.html or frontend/aphasia/index.html
-4. ESP32 firmware flashing:
-	- Refer to firmware/esp32/README.md
-5. Mobile app development:
-	- Refer to the mobile_app/ directory (for Flutter/native development if needed)
+## 🔌 Core API Interfaces
 
-## Typical API Interface Description
-- Speech Analysis: `POST /speech/analyze-pronunciation` - Upload audio and reference text, return pronunciation score, recognized text, suggestions, etc.
-- Model Training: `POST /pose_data_stats` - Interface for generating model training files
-- Query Training Files: `POST /train` - Interface for querying model training files
-- Query Model Files: `POST /models` - Interface for querying model files
-- Save Training Data: `POST /save_pose_data` - Interface for saving training data
+### AI Analysis
 
-- Account Login: `POST /api/login` - Account login interface
-- Verify Login Status: `POST /api/users/me` - Interface to verify account login status
-- Query Patients: `POST /api/patients` - Interface to query patient list data
-- Query Today's Reminders: `POST /api/reminders/today` - Interface to query today's reminders
-- Rehabilitation Progress: `POST /api/rehabilitation-progress/${patientId}` - Interface for querying/editing/deleting/adding rehabilitation progress data
-- Joint Range of Motion: `POST /api/joint-rom/${patientId}` - Interface for querying/editing/deleting/adding joint range of motion data
-- Training Plans: `POST /api/training-plans/${patientId}` - Interface for querying/editing/deleting/adding training plan data
-- Stage Progress: `POST /api/rehabilitation-stages/${patientId}` - Interface for querying/editing/deleting/adding rehabilitation stage data
-- Patient Data: `POST /api/patients/${patientId}` - Interface to query detailed patient information
+- `POST /speech/analyze-pronunciation` - Speech evaluation (audio + reference text → score + suggestions)
 
-- Training Plan Generation: `POST /generate_training_plan` - Personalized recommendation of movements and difficulty levels
-- Achievement Unlocking: `POST /check_achievements` - Return unlocked achievements
-- For detailed interfaces, see docs/api/README.md or each module in backend/routers/
+- `POST /pose_data_stats` - Generate training files from video-captured pose data
 
-## Main Frontend Pages
-- `frontend/index.html`: Platform homepage
-- `frontend/aphasia/index.html`: Aphasia rehabilitation training
-- `frontend/lower_limb/index.html`: Lower limb rehabilitation training
-- `frontend/upper_limb/index.html`: Upper limb rehabilitation training
-- `frontend/lower_limb/login.html`: Doctor backend login interface
-- `frontend/lower_limb/doctor.html`: Doctor backend workbench interface
-- `frontend/lower_limb/add-patient.html`: Doctor backend interface for adding patient information
-- `frontend/lower_limb/patient-details.html`: Doctor backend interface for adding patient rehabilitation training information
-- `frontend/lower_limb/overview.html`: Doctor backend interface for viewing detailed information of a single patient
-- Interactive scripts and styles are available in the static/js/ and static/css/ directories
+- `POST /generate_training_plan` - Create personalized training plan
 
-## Robot/Hardware Integration
-- ESP32 firmware: See firmware/esp32/
-- Bluetooth/Serial communication protocol: See firmware/documentation/
-- Supports stepper motors, sensors, voice broadcasting, etc.
+### Patient Management
 
-## Contribution Guidelines
-- Fork this repository and use Pull Requests for collaborative development
-- Follow consistent code naming conventions: English, lowercase, underscore-separated
-- For detailed instructions, see docs/ and README files of each module
-- It is recommended to develop each feature/module in a separate branch
+- `POST /api/login` - Doctor/patient login
 
-## Frequently Asked Questions
-- Do not upload large models, data, logs, or virtual environments to GitHub
-- Properly handle certificates and private data
-- Recommended .gitignore content: .venv/, __pycache__/, logs/, saved_models/, *.sqlite3
+- `POST /api/patients` - Query patient list
 
-## Contact & Support
-- For detailed API documentation, hardware integration guides, and deployment instructions, refer to docs/
-- Submit an Issue or contact the maintainers for any questions
+- `POST /api/rehabilitation-progress/{patientId}` - Manage rehabilitation progress
 
-LING YIN
-High School Affiliated to Renmin University of China
----
+Full API docs: `docs/api/README.md`
 
-> This platform aims to empower rehabilitation training with AI. Developers from medical, rehabilitation, and AI fields are welcome to contribute to the project!
+## 🤖 Hardware Integration
+
+- Supported devices: ESP32, stepper motors, motion sensors, voice modules
+
+- Communication protocols: Bluetooth 4.2+, Serial Port (RS232)
+
+- Firmware development: Arduino IDE + ESP32 board support
+
+- Guide: `firmware/documentation/communication_protocol.md`
+
+## 📱 Demo & Support
+
+- **Online Demo**: [AI Rehabilitation Training Platform Demo](https://bnstw.com/ai/)
+
+- **Help Center**: Refer to demo site documentation or contact maintainers
+
+- **Issue Tracking**: Use GitHub Issues for bug reports & feature requests
+
+## 👥 Contribution Guidelines
+
+1. Fork the repository
+
+2. Create a feature branch: `git checkout -b feature/your-feature`
+
+3. Follow coding conventions: English identifiers, snake_case naming
+
+4. Commit changes: `git commit -m "Add your feature"`
+
+5. Push to branch: `git push origin feature/your-feature`
+
+6. Submit a Pull Request
+
+## ⚠️ FAQ
+
+- ❌ Do NOT upload large files (models, datasets, logs) to GitHub
+
+- 🔒 Handle SSL certificates & sensitive data properly
+
+- 📝 Recommended .gitignore entries: `.venv/, __pycache__/, logs/, saved_models/`
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](https://www.doubao.cn) file for details (please add the LICENSE file to your repository).
+
+## 🧑‍💻 Author & Affiliation
+
+- Author: LING YIN
+
+- Affiliation: High School Affiliated to Renmin University of China
 
