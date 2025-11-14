@@ -1,0 +1,17 @@
+{
+  "learning_rate": 0.001,
+  "batch_size": 8,
+  "epochs": 5,
+  "model_name": "upper_limb_model_111244",
+  "category": "upper_limb",
+  "training_date": "2025-11-12T11:12:44.329354",
+  "final_loss": 0.0005141444271430373,
+  "final_accuracy": 1.0,
+  "final_val_loss": 1.9310633433633484e-05,
+  "final_val_accuracy": 1.0,
+  "model_architecture": "Feature-based DNN",
+  "data_source": "real_data",
+  "training_samples": 514,
+  "input_dimension": 128,
+  "num_classes": 2
+}

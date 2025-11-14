@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="patientOverview">患者总览 - 康复训练管理系统</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="../libs/tailwindcss/tailwindcss.js"></script>
+  <!-- 本地Font Awesome -->
+  <link href="../libs/font-awesome/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js -->
+  <script src="../libs/chart/chart.js"></script>
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0066CC',
+            secondary: '#1E88E5',
+            accent: '#64B5F6',
+            dark: '#0D47A1',
+            light: '#E3F2FD',
+            deep: '#0A3A7A',
+            med: '#1565C0',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-gradient {
+        background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+      }
+      .bg-grid {
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+        background-size: 20px 20px, 100% 100%;
+      }
+      .border-glow {
+        box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s infinite;
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+      }
+      .fade-in {
+        animation: fadeIn 1s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .pulse-dot {
+        animation: pulse-dot 2s infinite;
+      }
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    }
+    .text-gray-500 {
+    color: rgba(156, 163, 175, 0.8) !important;
+}
+
+.empty-state {
+    color: rgba(156, 163, 175, 0.7) !important;
+}
+
+.empty-state i {
+    opacity: 0.5;
+}
+
+/* 进度条样式 */
+.progress-bar {
+    background: linear-gradient(90deg, #3b82f6, #10b981, #ef4444);
+}
+
+/* 状态徽章动画 */
+.status-badge {
+    transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 表格行悬停效果 */
+.training-row {
+    transition: all 0.2s ease;
+}
+
+.training-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(4px);
+}
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+  <!-- 顶部装饰线条 -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+  
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- 顶部导航 -->
+    <header class="flex justify-between items-center mb-8 fade-in">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3">
+          <i class="fa fa-heartbeat text-xl text-light"></i>
+        </div>
+        <div class="text-xl font-semibold" data-i18n="systemName">康复训练管理系统</div>
+      </div>
+      <div class="flex items-center">
+        <div class="text-right mr-4">
+          <div class="text-sm opacity-80" data-i18n="patientOverview">患者总览</div>
+          <div class="text-xs opacity-60" data-i18n="system_tagline">科学康复 · 精准评估 · 智能辅助</div>
+        </div>
+        <!-- 语言切换按钮 -->
+        <button id="languageSwitch" class="px-3 py-2 bg-accent hover:bg-accent/80 rounded-lg text-sm transition-all duration-300 flex items-center">
+          <span data-i18n="switchToEnglish">English</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 返回按钮 -->
+    <button onclick="window.location.href='doctor.html'" class="mb-6 px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium flex items-center">
+      <i class="fa fa-arrow-left mr-2"></i> <span data-i18n="backToDoctor">返回医生工作台</span>
+    </button>
+    
+    <!-- 患者信息卡片 -->
+    <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h1 class="text-3xl font-bold" id="patientName">-</h1>
+          <div class="flex items-center mt-2">
+            <div class="text-sm opacity-80 mr-4" id="totalTrainingCountDisplay"><span data-i18n="totalTrainingCount">总训练次数</span>：<span id="totalTrainingCountValue">0</span><span data-i18n="times">次</span></div>
+            <div class="text-sm opacity-80 mr-4" id="totalTrainingHoursDisplay"><span data-i18n="totalTrainingHours">总训练时长</span>：<span id="totalTrainingHoursValue">0</span><span data-i18n="hours">小时</span></div>
+            <div class="text-sm opacity-80" id="totalTrainingStepsDisplay"><span data-i18n="totalSteps">总步数</span>：<span id="totalTrainingStepsValue">0</span><span data-i18n="steps">步</span></div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm opacity-80" data-i18n="attendingDoctor">主治医生: <span id="doctorName">张医生</span></div>
+          <div class="text-sm opacity-80" data-i18n="rehabDepartment">康复科室: <span id="departmentName">下肢康复科</span></div>
+        </div>
+      </div>
+      
+      <!-- 当前康复阶段 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="currentRehabStage">当前康复阶段</h2>
+        <div class="bg-white/5 rounded-xl p-4">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <div class="font-bold text-lg" id="stageName">-</div>
+              <div class="text-sm opacity-80 mt-1" id="stageDuration">-</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-accent" id="stageProgressPercentage">0%</div>
+              <div class="text-sm opacity-80" data-i18n="stageCompletion">阶段完成度</div>
+            </div>
+          </div>
+          
+          <div class="w-full bg-white/20 rounded-full h-3 mb-2">
+            <div class="bg-accent h-3 rounded-full" id="stageProgressBar" style="width:0%"></div>
+          </div>
+          
+          <div class="grid grid-cols-4 gap-4 mt-4" id="stageDetails">
+            <!-- 阶段详情将通过JavaScript动态加载 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 关节活动度分析 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="jointMobilityAnalysis">关节活动度分析</h2>
+        <div class="bg-white/5 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div class="grid grid-cols-2 gap-4" id="jointMobilityContainer">
+                <!-- 关节活动度将通过JavaScript动态加载 -->
+              </div>
+            </div>
+            
+            <div>
+              <canvas id="jointChart" height="250"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 康复进度跟踪 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="rehabProgressTracking">康复进度跟踪</h2>
+        <div class="bg-white/5 rounded-xl p-4">
+          <div class="flex justify-between mb-4">
+            <div>
+              <div class="font-bold text-lg" data-i18n="overallRehabProgress">整体康复进度</div>
+              <div class="text-sm opacity-80 mt-1" data-i18n="comprehensiveAssessment">基于关节活动度、肌力、平衡能力综合评估</div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-accent" id="overallProgress">0%</div>
+              <div class="text-sm opacity-80" data-i18n="totalProgress">总体进度</div>
+            </div>
+          </div>
+          
+          <div class="w-full bg-white/20 rounded-full h-3 mb-6">
+            <div class="bg-accent h-3 rounded-full" id="overallProgressBar" style="width: 0%"></div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="progressDetails">
+            <!-- 进度详情将通过JavaScript动态加载 -->
+          </div>
+          
+          <div class="mt-6">
+            <canvas id="progressChart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 训练记录 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="trainingRecords">训练记录</h2>
+        
+        <!-- 训练统计概览 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-4 border border-blue-400/30">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-white" id="totalTrainingCountCard">0</div>
+                <div class="text-sm opacity-80" data-i18n="totalTrainingCount">总训练次数</div>
+              </div>
+              <div class="w-10 h-10 bg-blue-500/30 rounded-full flex items-center justify-center">
+                <i class="fa fa-dumbbell text-blue-300"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-4 border border-green-400/30">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-white" id="totalTrainingHoursCard">0h</div>
+                <div class="text-sm opacity-80" data-i18n="totalTrainingHours">总训练时长</div>
+              </div>
+              <div class="w-10 h-10 bg-green-500/30 rounded-full flex items-center justify-center">
+                <i class="fa fa-clock text-green-300"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-4 border border-purple-400/30">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-white" id="totalTrainingStepsCard">0</div>
+                <div class="text-sm opacity-80" data-i18n="totalSteps">总步数</div>
+              </div>
+              <div class="w-10 h-10 bg-purple-500/30 rounded-full flex items-center justify-center">
+                <i class="fa fa-footsteps text-purple-300"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl p-4 border border-orange-400/30">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-2xl font-bold text-white" id="completionRateCard">0%</div>
+                <div class="text-sm opacity-80" data-i18n="completionRate">完成率</div>
+              </div>
+              <div class="w-10 h-10 bg-orange-500/30 rounded-full flex items-center justify-center">
+                <i class="fa fa-chart-line text-orange-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最新训练记录 -->
+        <div class="bg-white/5 rounded-xl p-4 mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold" data-i18n="latestTrainingRecord">最新训练记录</h3>
+            <div class="text-sm opacity-70" id="latestRecordDate">-</div>
+          </div>
+          
+          <div id="latestTrainingRecord">
+            <!-- 最新训练记录将动态渲染在这里 -->
+          </div>
+        </div>
+
+        <!-- 月度训练计划 -->
+        <div class="bg-white/5 rounded-xl p-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold" id="currentMonthPlan" data-i18n="currentMonthPlan">本月训练计划</h3>
+            <div class="text-sm opacity-70" id="planProgress" data-i18n="progress">进度: 0%</div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-white/20">
+                  <th class="pb-2" data-i18n="time">时间</th>
+                  <th class="pb-2" data-i18n="trainingContent">训练内容</th>
+                  <th class="pb-2" data-i18n="duration">时长</th>
+                  <th class="pb-2" data-i18n="steps">步数</th>
+                  <th class="pb-2" data-i18n="completionStatus">完成状态</th>
+                </tr>
+              </thead>
+              <tbody id="monthlyTrainingPlan">
+                <!-- 月度训练计划将动态渲染在这里 -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 月度统计 -->
+          <div class="mt-6 pt-4 border-t border-white/10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div class="text-lg font-bold text-accent" id="monthTrainingCount">0</div>
+                <div class="text-sm opacity-80" data-i18n="monthTrainingCount">本月训练次数</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-accent" id="monthTrainingHours">0h</div>
+                <div class="text-sm opacity-80" data-i18n="monthTrainingHours">本月训练时长</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-accent" id="monthTrainingSteps">0</div>
+                <div class="text-sm opacity-80" data-i18n="monthTrainingSteps">本月总步数</div>
+              </div>
+              <div>
+                <div class="text-lg font-bold text-accent" id="monthCompletionRate">0%</div>
+                <div class="text-sm opacity-80" data-i18n="monthCompletionRate">本月完成率</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 设备状态 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="deviceStatus">设备状态</h2>
+        <div class="bg-white/5 rounded-xl p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 设备状态列表 -->
+            <div class="space-y-4" id="deviceStatusList">
+              <!-- 设备状态将通过JavaScript动态加载 -->
+            </div>
+            
+            <!-- 电池电量可视化 -->
+            <div class="flex flex-col items-center justify-center">
+              <div class="relative w-48 h-48">
+                <!-- 电池电量圆形进度条 -->
+                <svg class="w-full h-full" viewBox="0 0 120 120">
+                  <!-- 背景圆 -->
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="12" />
+                  <!-- 进度圆 -->
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#64B5F6" stroke-width="12" 
+                          stroke-dasharray="339.292" stroke-dashoffset="74.644" 
+                          transform="rotate(-90 60 60)" />
+                  <!-- 中心文本 -->
+                  <text x="60" y="65" text-anchor="middle" fill="#64B5F6" font-size="24" font-weight="bold" id="batteryPercentage">0%</text>
+                </svg>
+                
+                <!-- 电池图标 -->
+                <div class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -mt-2">
+                  <i class="fa fa-battery-three-quarters text-4xl text-accent"></i>
+                </div>
+              </div>
+              
+              <div class="mt-4 text-center">
+                <div class="font-bold text-lg" data-i18n="deviceBatteryStatus">设备电量状态</div>
+                <div class="text-sm opacity-80 mt-1"><span data-i18n="estimatedRemainingTime">预计剩余使用时间</span>: <span id="remainingTime">0</span><span data-i18n="hours">小时</span></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 设备状态总结 -->
+          <div class="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/30">
+            <div class="flex items-center">
+              <i class="fa fa-info-circle text-accent mr-2"></i>
+              <span class="font-medium" data-i18n="deviceStatusSummary">设备状态总结:</span>
+            </div>
+            <div class="text-sm mt-1" id="deviceSummary">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部信息 -->
+    <footer class="text-center pt-8 border-t border-white/10 fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+              <i class="fa fa-heartbeat text-sm text-light"></i>
+            </div>
+            <span class="font-semibold" data-i18n="systemName">康复训练管理系统</span>
+          </div>
+          <div class="text-sm opacity-70 mt-1" data-i18n="systemSlogan">科技赋能康复，智能改善生活</div>
+        </div>
+        
+        <div class="text-sm opacity-70" data-i18n="copyright">
+          © 2025 康复训练管理系统 - 基于AI的精准康复解决方案
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- 背景装饰元素 -->
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+    <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+  </div>
+
+  <script src="../static/js/common.js"></script>
+  <script src="../static/js/i18nManage.js"></script>
+  
+  <script>
+// 全局变量
+let currentPatientData = null;
+
+// 获取URL参数
+function getUrlParameter(name) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
+}
+
+// 显示消息提示
+function showMessage(message, type = 'error') {
+  const existingMessage = document.querySelector('.message-toast');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
+
+  const messageEl = document.createElement('div');
+  messageEl.className = `message-toast fixed top-4 right-4 p-4 rounded-lg z-50 transform transition-all duration-300 ${
+    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+  } text-white shadow-lg`;
+  messageEl.textContent = message;
+  
+  document.body.appendChild(messageEl);
+  
+  setTimeout(() => {
+    messageEl.remove();
+  }, 3000);
+}
+
+// 获取认证头
+function getAuthHeaders() {
+  const token = localStorage.getItem('access_token');
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+}
+
+// 检查登录状态
+function checkAuth() {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  return true;
+}
+
+// 加载患者详情
+async function loadPatientDetails() {
+  if (!checkAuth()) return;
+  
+  const patientId = getUrlParameter('patient_id');
+  if (!patientId) {
+    showMessage(i18n.t('noPatientData'));
+    return;
+  }
+
+  // 加载训练计划
+  loadMonthlyTrainingPlan(patientId);
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (response.status === 401) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_info');
+      window.location.href = 'doctor.html';
+      return;
+    }
+    
+    if (!response.ok) {
+      throw new Error(i18n.t('loadingFailed'));
+    }
+    
+    const patient = await response.json();
+    currentPatientData = patient;
+    renderPatientDetails(patient);
+    
+  } catch (error) {
+    console.error('加载患者详情错误:', error);
+    showMessage(i18n.t('loadingFailed'));
+  }
+}
+
+// 渲染患者详情
+function renderPatientDetails(patient) {
+  if (!patient || !patient.patient_info) {
+    showEmptyPatientState();
+    return;
+  }
+  
+  // 更新患者基本信息
+  document.getElementById('patientName').textContent = patient.patient_info.name || '-';
+  document.getElementById('totalTrainingCountValue').textContent = patient.training_stats?.training_count || 0;
+  document.getElementById('totalTrainingHoursValue').textContent = patient.training_stats?.total_duration || 0;
+  document.getElementById('totalTrainingStepsValue').textContent = patient.training_stats?.total_steps || 0;
+  
+  // 更新康复阶段信息
+  renderRehabStage(patient.current_stage);
+  
+  // 更新关节活动度
+  renderJointMobility(patient.joint_mobility);
+  
+  // 更新康复进度
+  renderRehabProgress(patient.patient_summary);
+  
+  // 更新设备状态
+  renderDeviceStatus(patient.device_status);
+  
+  // 初始化图表
+  initCharts(patient);
+}
+
+// 渲染康复阶段信息
+function renderRehabStage(stage) {
+  if (!stage) {
+    document.getElementById('stageName').textContent = i18n.t('noPatientData');
+    document.getElementById('stageDuration').textContent = '-';
+    document.getElementById('stageProgressPercentage').textContent = '0%';
+    document.getElementById('stageProgressBar').style.width = '0%';
+    
+    document.getElementById('stageDetails').innerHTML = `
+      <div class="text-center col-span-4 py-4 empty-state">
+        <i class="fa fa-info-circle text-2xl mb-2 block"></i>
+        <div>${i18n.t('noPatientData')}</div>
+      </div>
+    `;
+    return;
+  }
+  
+  document.getElementById('stageName').textContent = stage.stage_name || '-';
+  
+  const durationText = i18n.currentLanguage === 'zh-CN' ? 
+    `已进行 ${stage.weeks_completed || 0} 周，预计还需 ${stage.weeks_remaining || 0} 周完成` :
+    `Completed ${stage.weeks_completed || 0} weeks, ${stage.weeks_remaining || 0} weeks remaining`;
+  document.getElementById('stageDuration').textContent = durationText;
+  
+  document.getElementById('stageProgressPercentage').textContent = (stage.progress || 0) + '%';
+  document.getElementById('stageProgressBar').style.width = (stage.progress || 0) + '%';
+  
+  const intensityMap = {
+    "low": i18n.t('lowIntensity'),
+    "medium": i18n.t('mediumIntensity'),
+    "high": i18n.t('highIntensity')
+  };
+  
+  document.getElementById('stageDetails').innerHTML = `
+    <div class="text-center">
+      <div class="text-sm opacity-80">${i18n.t('stageGoal')}</div>
+      <div class="font-bold">${stage.target_goals || '-'}</div>
+    </div>
+    <div class="text-center">
+      <div class="text-sm opacity-80">${i18n.t('weeklyFocus')}</div>
+      <div class="font-bold">${stage.weekly_focus || '-'}</div>
+    </div>
+    <div class="text-center">
+      <div class="text-sm opacity-80">${i18n.t('trainingIntensity')}</div>
+      <div class="font-bold">${intensityMap[stage.training_intensity] || stage.training_intensity || '-'}</div>
+    </div>
+    <div class="text-center">
+      <div class="text-sm opacity-80">${i18n.t('nextEvaluation')}</div>
+      <div class="font-bold">${stage.next_evaluation_date || '-'}</div>
+    </div>
+  `;
+}
+
+// 渲染关节活动度
+function renderJointMobility(mobility) {
+  const container = document.getElementById('jointMobilityContainer');
+  
+  if (!mobility) {
+    container.innerHTML = `
+      <div class="col-span-2 text-center py-8 empty-state">
+        <i class="fa fa-exclamation-triangle text-2xl mb-2 block"></i>
+        <div>${i18n.t('noJointData')}</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const joints = [
+    { name: 'leftHip', value: mobility.left_hip, change: mobility.left_hip_change },
+    { name: 'rightHip', value: mobility.right_hip, change: mobility.right_hip_change },
+    { name: 'leftKnee', value: mobility.left_knee, change: mobility.left_knee_change },
+    { name: 'rightKnee', value: mobility.right_knee, change: mobility.right_knee_change },
+    { name: 'leftAnkle', value: mobility.left_ankle, change: mobility.left_ankle_change },
+    { name: 'rightAnkle', value: mobility.right_ankle, change: mobility.right_ankle_change }
+  ];
+  
+  let jointHTML = '';
+  joints.forEach(joint => {
+    const value = joint.value || 0;
+    const change = joint.change || 0;
+    
+    let changeIcon = 'fa-minus';
+    let changeClass = 'text-gray-400';
+    
+    if (change > 0) {
+      changeIcon = 'fa-arrow-up';
+      changeClass = 'text-success';
+    } else if (change < 0) {
+      changeIcon = 'fa-arrow-down';
+      changeClass = 'text-warning';
+    }
+    
+    const changeText = i18n.currentLanguage === 'zh-CN' ? 
+      `较上周${change > 0 ? '提升' : change < 0 ? '下降' : '无变化'}${Math.abs(change)}%` :
+      `${change > 0 ? 'Increased' : change < 0 ? 'Decreased' : 'No change'} by ${Math.abs(change)}% from last week`;
+    
+    jointHTML += `
+      <div class="text-center">
+        <div class="text-sm opacity-80 mb-2">${i18n.t(joint.name)}</div>
+        <div class="text-2xl font-bold text-accent">${value}%</div>
+        <div class="w-full h-2 bg-white/20 rounded-full mt-2">
+          <div class="h-full bg-accent rounded-full" style="width: ${value}%"></div>
+        </div>
+        <div class="text-xs mt-1 ${changeClass}">
+          <i class="fa ${changeIcon} mr-1"></i>${changeText}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = jointHTML;
+}
+
+// 渲染康复进度
+function renderRehabProgress(summary) {
+  if (!summary) {
+    document.getElementById('overallProgress').textContent = '0%';
+    document.getElementById('overallProgressBar').style.width = '0%';
+    
+    document.getElementById('progressDetails').innerHTML = `
+      <div class="col-span-3 text-center py-4 empty-state">
+        <i class="fa fa-exclamation-triangle text-2xl mb-2 block"></i>
+        <div>${i18n.t('noProgressData')}</div>
+      </div>
+    `;
+    return;
+  }
+  
+  document.getElementById('overallProgress').textContent = (summary.overall_progress || 0) + '%';
+  document.getElementById('overallProgressBar').style.width = (summary.overall_progress || 0) + '%';
+  
+  const progressData = [
+    { type: 'jointMobility', value: summary.joint_mobility_progress || 0 },
+    { type: 'muscleRecovery', value: summary.muscle_strength_progress || 0 },
+    { type: 'balanceAbility', value: summary.balance_ability_progress || 0 }
+  ];
+  
+  let progressHTML = '';
+  progressData.forEach(item => {
+    progressHTML += `
+      <div>
+        <div class="flex justify-between mb-1">
+          <span class="text-sm">${i18n.t(item.type)}</span>
+          <span class="text-sm font-bold">${item.value}%</span>
+        </div>
+        <div class="w-full bg-white/20 rounded-full h-2">
+          <div class="bg-accent h-2 rounded-full" style="width: ${item.value}%"></div>
+        </div>
+      </div>
+    `;
+  });
+  
+  document.getElementById('progressDetails').innerHTML = progressHTML;
+}
+
+// 加载月度训练计划数据
+async function loadMonthlyTrainingPlan(patientId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/training-plans/monthly`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (response.status === 401) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_info');
+      window.location.href = 'doctor.html';
+      return;
+    }
+    
+    if (!response.ok) {
+      throw new Error(`${i18n.t('loadingFailed')}: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    renderMonthlyTrainingPlan(data);
+    updateMonthlyStats(data.monthly_stats);
+    updateCurrentPlan(data.current_plan, data.current_month);
+    
+  } catch (error) {
+    console.error('加载训练计划失败:', error);
+    showEmptyTrainingPlan();
+    showMessage(i18n.t('loadingFailed') + ': ' + error.message);
+  }
+}
+
+// 渲染月度训练计划表格
+function renderMonthlyTrainingPlan(data) {
+  const tableBody = document.getElementById('monthlyTrainingPlan');
+  
+  if (!data.training_records || data.training_records.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="py-8 text-center text-gray-500">
+          <div class="flex flex-col items-center">
+            <i class="fa fa-clipboard-list text-4xl mb-2 opacity-50"></i>
+            <div>${i18n.t('noMonthlyRecords')}</div>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tableBody.innerHTML = data.training_records.map(record => `
+    <tr class="border-b border-white/10 hover:bg-white/5 transition-colors">
+      <td class="py-3">
+        <div class="font-medium">${formatDate(record.training_date)}</div>
+        <div class="text-sm opacity-70">${getDayOfWeek(record.training_date)}</div>
+      </td>
+      <td class="py-3">
+        <div class="font-medium">${record.training_content || i18n.t('trainingContent')}</div>
+        <div class="text-sm opacity-70">${getTrainingIntensity(record.training_content)}</div>
+      </td>
+      <td class="py-3">
+        <div class="flex items-center">
+          <i class="fa fa-clock text-blue-400 mr-2"></i>
+          ${record.duration || 0}${i18n.currentLanguage === 'zh-CN' ? '分钟' : 'min'}
+        </div>
+      </td>
+      <td class="py-3">
+        <div class="flex items-center">
+          <i class="fa fa-shoe-prints text-green-400 mr-2"></i>
+          ${(record.steps || 0).toLocaleString()}${i18n.t('steps')}
+        </div>
+      </td>
+      <td class="py-3">
+        ${getCompletionBadge(record.completion_status)}
+      </td>
+    </tr>
+  `).join('');
+}
+
+// 更新月度统计
+function updateMonthlyStats(stats) {
+  if (!stats) return;
+  
+  document.getElementById('monthTrainingCount').textContent = stats.training_count || 0;
+  document.getElementById('monthTrainingHours').textContent = `${stats.training_hours || 0}h`;
+  document.getElementById('monthTrainingSteps').textContent = (stats.total_steps || 0).toLocaleString();
+  document.getElementById('monthCompletionRate').textContent = `${stats.completion_rate || 0}%`;
+  
+  // 更新训练统计卡片
+  document.getElementById('totalTrainingCountCard').textContent = stats.training_count || 0;
+  document.getElementById('totalTrainingHoursCard').textContent = `${stats.training_hours || 0}h`;
+  document.getElementById('totalTrainingStepsCard').textContent = (stats.total_steps || 0).toLocaleString();
+  document.getElementById('completionRateCard').textContent = `${stats.completion_rate || 0}%`;
+}
+
+// 更新当前计划信息
+function updateCurrentPlan(plan, currentMonth) {
+  const planTitle = document.getElementById('currentMonthPlan');
+  const planProgress = document.getElementById('planProgress');
+  
+  planTitle.textContent = `${currentMonth || (i18n.currentLanguage === 'zh-CN' ? '本月' : 'Current Month')}${i18n.t('currentMonthPlan')}`;
+  
+  if (plan) {
+    planProgress.textContent = `${i18n.t('progress')}: ${plan.progress || 0}%`;
+    planProgress.className = `text-sm ${(plan.progress || 0) >= 80 ? 'text-green-400' : (plan.progress || 0) >= 50 ? 'text-yellow-400' : 'text-red-400'}`;
+  } else {
+    planProgress.textContent = `${i18n.t('progress')}: ${i18n.t('notStarted')}`;
+    planProgress.className = 'text-sm opacity-70';
+  }
+}
+
+// 渲染设备状态
+function renderDeviceStatus(status) {
+  const container = document.getElementById('deviceStatusList');
+  
+  if (!status) {
+    container.innerHTML = `
+      <div class="text-center py-8 empty-state">
+        <i class="fa fa-exclamation-triangle text-2xl mb-2 block"></i>
+        <div>${i18n.t('noDeviceData')}</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const devices = [
+    { 
+      key: 'main_controller', 
+      icon: 'fa-microchip', 
+      name: 'mainController',
+      statusKey: 'operatingStatus',
+      value: status.main_controller === 'normal' ? i18n.t('normalOperation') : i18n.t('loadingFailed'),
+      color: status.main_controller === 'normal' ? 'success' : 'danger'
+    },
+    { 
+      key: 'drive_motor', 
+      icon: 'fa-cogs', 
+      name: 'driveMotor',
+      statusKey: 'operatingStatus',
+      value: status.drive_motor === 'normal' ? i18n.t('normalOperation') : i18n.t('loadingFailed'),
+      color: status.drive_motor === 'normal' ? 'success' : 'danger'
+    },
+    { 
+      key: 'sensors', 
+      icon: 'fa-sitemap', 
+      name: 'sensorGroup',
+      statusKey: 'calibrationStatus',
+      value: status.sensors === 'normal' ? i18n.t('normalOperation') : i18n.t('partialCalibration'),
+      color: status.sensors === 'normal' ? 'success' : 'warning'
+    },
+    { 
+      key: 'battery_level', 
+      icon: 'fa-battery-half', 
+      name: 'batteryLevel',
+      statusKey: 'remainingPower',
+      value: (status.battery_level || 0) + '%',
+      color: 'accent'
+    },
+    { 
+      key: 'self_check', 
+      icon: 'fa-check-circle', 
+      name: 'deviceSelfCheck',
+      statusKey: 'selfCheckStatus',
+      value: status.self_check === 'normal' ? i18n.t('normalOperation2') : i18n.t('loadingFailed'),
+      color: status.self_check === 'normal' ? 'success' : 'danger'
+    }
+  ];
+  
+  let deviceHTML = '';
+  devices.forEach(device => {
+    deviceHTML += `
+      <div class="flex items-center justify-between p-4 bg-white/10 rounded-lg">
+        <div class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-${device.color}/20 flex items-center justify-center mr-4">
+            <i class="fa ${device.icon} text-${device.color}"></i>
+          </div>
+          <div>
+            <div class="font-bold">${i18n.t(device.name)}</div>
+            <div class="text-sm opacity-80">${i18n.t(device.statusKey)}</div>
+          </div>
+        </div>
+        <div class="text-${device.color} font-bold">${device.value}</div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = deviceHTML;
+  
+  // 更新电池电量显示
+  document.getElementById('batteryPercentage').textContent = (status.battery_level || 0) + '%';
+  
+  // 计算剩余使用时间
+  const remainingHours = Math.round((status.battery_level || 0) * 6 / 100);
+  document.getElementById('remainingTime').textContent = remainingHours;
+  
+  // 更新设备状态总结
+  document.getElementById('deviceSummary').textContent = 
+    status.main_controller === 'normal' && status.drive_motor === 'normal' ?
+    (i18n.currentLanguage === 'zh-CN' ? 
+      '设备整体运行正常，传感器组需要校准，建议在下次使用前完成校准操作。' :
+      'The device is operating normally overall, but the sensor group requires calibration. It is recommended to complete the calibration before next use.') :
+    (i18n.currentLanguage === 'zh-CN' ? 
+      '设备存在异常，请检查设备状态并及时处理。' :
+      'The device has abnormalities. Please check the device status and handle it promptly.');
+}
+
+// 显示空训练计划状态
+function showEmptyTrainingPlan() {
+  const tableBody = document.getElementById('monthlyTrainingPlan');
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="py-12 text-center">
+          <div class="flex flex-col items-center text-gray-500">
+            <i class="fa fa-exclamation-triangle text-3xl mb-3 opacity-50"></i>
+            <div>${i18n.t('loadingFailed')}</div>
+            <div class="text-sm mt-1">${i18n.t('noTrainingData')}</div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+  
+  // 重置月度统计
+  document.getElementById('monthTrainingCount').textContent = '0';
+  document.getElementById('monthTrainingHours').textContent = '0h';
+  document.getElementById('monthTrainingSteps').textContent = '0';
+  document.getElementById('monthCompletionRate').textContent = '0%';
+  
+  // 重置训练统计卡片
+  document.getElementById('totalTrainingCountCard').textContent = '0';
+  document.getElementById('totalTrainingHoursCard').textContent = '0h';
+  document.getElementById('totalTrainingStepsCard').textContent = '0';
+  document.getElementById('completionRateCard').textContent = '0%';
+  
+  // 重置计划进度
+  document.getElementById('planProgress').textContent = `${i18n.t('progress')}: 0%`;
+  document.getElementById('planProgress').className = 'text-sm opacity-70';
+}
+
+// 显示空患者状态
+function showEmptyPatientState() {
+  document.getElementById('patientName').textContent = i18n.t('noPatientData');
+  document.getElementById('totalTrainingCountValue').textContent = '0';
+  document.getElementById('totalTrainingHoursValue').textContent = '0';
+  document.getElementById('totalTrainingStepsValue').textContent = '0';
+  
+  // 重置所有部分为空状态
+  renderRehabStage(null);
+  renderJointMobility(null);
+  renderRehabProgress(null);
+  renderDeviceStatus(null);
+  
+  // 显示空训练计划
+  showEmptyTrainingPlan();
+}
+
+// 工具函数
+function formatDate(dateString) {
+  if (!dateString) return i18n.t('noTrainingData');
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(i18n.currentLanguage === 'zh-CN' ? 'zh-CN' : 'en-US');
+  } catch (e) {
+    return dateString;
+  }
+}
+
+function getDayOfWeek(dateString) {
+  if (!dateString) return '';
+  try {
+    const days = i18n.currentLanguage === 'zh-CN' ? 
+      ['周日', '周一', '周二', '周三', '周四', '周五', '周六'] :
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  } catch (e) {
+    return '';
+  }
+}
+
+function getTrainingIntensity(content) {
+  if (!content) return `<span class="text-gray-400">${i18n.currentLanguage === 'zh-CN' ? '常规' : 'Regular'}</span>`;
+  
+  const intensityMap = {
+    '低强度': 'text-green-400',
+    '中强度': 'text-yellow-400', 
+    '高强度': 'text-red-400',
+    'Low Intensity': 'text-green-400',
+    'Medium Intensity': 'text-yellow-400',
+    'High Intensity': 'text-red-400'
+  };
+  
+  for (const [key, color] of Object.entries(intensityMap)) {
+    if (content.includes(key)) {
+      return `<span class="${color}">${key}</span>`;
+    }
+  }
+  return `<span class="text-gray-400">${i18n.currentLanguage === 'zh-CN' ? '常规' : 'Regular'}</span>`;
+}
+
+function getCompletionBadge(status) {
+  const badges = {
+    'completed': {
+      text: i18n.t('completed'),
+      class: 'bg-green-500/20 text-green-400 border-green-500/30'
+    },
+    'partial': {
+      text: i18n.t('inProgress'), 
+      class: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+    },
+    'pending': {
+      text: i18n.t('notStarted'),
+      class: 'bg-red-500/20 text-red-400 border-red-500/30'
+    }
+  };
+  
+  const badge = badges[status] || badges.pending;
+  return `<span class="px-2 py-1 rounded-full text-xs border ${badge.class}">${badge.text}</span>`;
+}
+
+// 初始化图表
+function initCharts(patient) {
+  // 关节活动度雷达图
+  const jointCtx = document.getElementById('jointChart').getContext('2d');
+  new Chart(jointCtx, {
+    type: 'radar',
+    data: {
+      labels: i18n.currentLanguage === 'zh-CN' ? 
+        ['左髋', '右髋', '左膝', '右膝', '左踝', '右踝'] :
+        ['Left Hip', 'Right Hip', 'Left Knee', 'Right Knee', 'Left Ankle', 'Right Ankle'],
+      datasets: [
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '当前活动度' : 'Current Mobility',
+          data: [
+            patient.joint_mobility?.left_hip || 0,
+            patient.joint_mobility?.right_hip || 0,
+            patient.joint_mobility?.left_knee || 0,
+            patient.joint_mobility?.right_knee || 0,
+            patient.joint_mobility?.left_ankle || 0,
+            patient.joint_mobility?.right_ankle || 0
+          ],
+          backgroundColor: 'rgba(100, 181, 246, 0.2)',
+          borderColor: '#64B5F6',
+          borderWidth: 2,
+          pointBackgroundColor: '#64B5F6',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#64B5F6'
+        },
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '目标活动度' : 'Target Mobility',
+          data: [60, 60, 80, 80, 70, 70],
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          borderColor: '#10B981',
+          borderWidth: 2,
+          pointBackgroundColor: '#10B981',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#10B981',
+          borderDash: [5, 5]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          angleLines: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          pointLabels: {
+            color: 'rgba(255, 255, 255, 0.8)'
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.5)',
+            backdropColor: 'transparent'
+          },
+          suggestedMin: 0,
+          suggestedMax: 100
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: 'rgba(255, 255, 255, 0.8)'
+          }
+        }
+      }
+    }
+  });
+  
+  initProgressChart(patient);
+}
+
+// 更新康复进度图表渲染函数
+function initProgressChart(patient) {
+  const progressCtx = document.getElementById('progressChart').getContext('2d');
+  
+  // 使用实际的康复进度数据
+  const progressData = patient.progress_history || [];
+  
+  // 准备图表数据
+  const labels = progressData.map(p => 
+    i18n.currentLanguage === 'zh-CN' ? `第${p.week_number}周` : `Week ${p.week_number}`
+  );
+  const overallData = progressData.map(p => p.overall_progress);
+  const jointData = progressData.map(p => p.joint_mobility);
+  const muscleData = progressData.map(p => p.muscle_strength);
+  const balanceData = progressData.map(p => p.balance_ability);
+  
+  // 如果没有数据，使用默认数据
+  const hasData = progressData.length > 0;
+  
+  new Chart(progressCtx, {
+    type: 'line',
+    data: {
+      labels: hasData ? labels : (i18n.currentLanguage === 'zh-CN' ? 
+        ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周', '第7周', '第8周', '第9周', '第10周', '第11周', '第12周'] :
+        ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12']),
+      datasets: [
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '整体康复进度 (%)' : 'Overall Progress (%)',
+          data: hasData ? overallData : [10, 15, 22, 28, 35, 42, 48, 52, 56, 60, 64, 68],
+          borderColor: '#64B5F6',
+          backgroundColor: 'rgba(100, 181, 246, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#64B5F6',
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '关节活动度 (%)' : 'Joint Mobility (%)',
+          data: hasData ? jointData : [5, 8, 12, 15, 18, 20, 22, 23, 24, 25, 26, 28],
+          borderColor: '#10B981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+          pointBackgroundColor: '#10B981',
+          pointBorderColor: '#fff',
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          borderDash: [5, 5]
+        },
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '肌力恢复 (%)' : 'Muscle Recovery (%)',
+          data: hasData ? muscleData : [8, 12, 18, 22, 28, 32, 36, 38, 40, 42, 44, 46],
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+          pointBackgroundColor: '#F59E0B',
+          pointBorderColor: '#fff',
+          pointRadius: 3,
+          pointHoverRadius: 5
+        },
+        {
+          label: i18n.currentLanguage === 'zh-CN' ? '平衡能力 (%)' : 'Balance Ability (%)',
+          data: hasData ? balanceData : [12, 18, 25, 30, 38, 45, 50, 52, 55, 58, 60, 62],
+          borderColor: '#EF4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+          pointBackgroundColor: '#EF4444',
+          pointBorderColor: '#fff',
+          pointRadius: 3,
+          pointHoverRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: 'rgba(255, 255, 255, 0.8)',
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          },
+          title: {
+            display: true,
+            text: i18n.currentLanguage === 'zh-CN' ? '进度 (%)' : 'Progress (%)',
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          },
+          title: {
+            display: true,
+            text: i18n.currentLanguage === 'zh-CN' ? '训练周数' : 'Training Weeks',
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'nearest'
+      }
+    }
+  });
+}
+
+// 重新加载页面数据（用于语言切换后刷新数据）
+function reloadPageData() {
+  if (currentPatientData) {
+    // 重新渲染患者数据
+    renderPatientDetails(currentPatientData);
+    
+    // 重新初始化图表
+    initCharts(currentPatientData);
+  } else {
+    // 重新加载患者详情
+    const patientId = getUrlParameter('patient_id');
+    if (patientId) {
+      loadPatientDetails();
+    }
+  }
+}
+
+// 页面加载完成后执行
+document.addEventListener('DOMContentLoaded', async function() {
+  if (!checkAuth()) return;
+  
+  // 初始化国际化
+  await i18n.init();
+  
+  // 添加语言切换事件
+  document.getElementById('languageSwitch').addEventListener('click', switchLanguage);
+  
+  // 监听语言变化事件
+  window.addEventListener('languageChanged', function(event) {
+    reloadPageData();
+  });
+  
+  // 页面加载完成后执行
+  document.body.classList.add('loaded');
+  
+  // 加载患者详情
+  loadPatientDetails();
+});
+</script>
+</body>
+</html>

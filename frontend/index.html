@@ -1,0 +1,389 @@
+ <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="system_name">智能康复辅助平台</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="./libs/tailwindcss/tailwindcss.js"></script>
+  <!-- 引入Font Awesome -->
+  <link rel="stylesheet" href="./libs/font-awesome/all.min.css">
+  <!-- 统一样式（本地管理） 
+  <link href="./static/css/style.css" rel="stylesheet">-->
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0066CC',
+            secondary: '#1E88E5',
+            accent: '#64B5F6',
+            dark: '#0D47A1',
+            light: '#E3F2FD',
+            deep: '#0A3A7A',
+            med: '#1565C0'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-gradient {
+        background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+      }
+      .bg-grid {
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+        background-size: 20px 20px, 100% 100%;
+      }
+      .border-glow {
+        box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s infinite;
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+      }
+      .fade-in {
+        animation: fadeIn 1s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .system-image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        height: 12rem;
+        background: linear-gradient(135deg, rgba(100, 181, 246, 0.2) 0%, rgba(0, 102, 204, 0.3) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .system-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+      .system-image:hover {
+        transform: scale(1.05);
+      }
+      .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .system-image-container:hover .image-overlay {
+        opacity: 1;
+      }
+      .feature-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(100, 181, 246, 0.9);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+  <!-- 顶部装饰线条 -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+  
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- 顶部导航 -->
+    <header class="flex justify-between items-center mb-12 fade-in">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3">
+          <i class="fa fa-heartbeat text-xl text-light"></i>
+        </div>
+        <div class="text-xl font-semibold" data-i18n="system_name">智能康复辅助平台</div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <div class="text-sm opacity-80" data-i18n="system_tagline">科学康复 · 精准评估 · 智能辅助</div>
+        </div>
+        <!-- 语言切换按钮 -->
+        <button id="languageSwitch" class="px-3 py-2 bg-accent hover:bg-accent/80 rounded-lg text-sm transition-all duration-300 flex items-center">
+          <span data-i18n="switchToEnglish">English</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 标题区域 -->
+    <div class="text-center mb-16 relative fade-in">
+      <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-3" data-i18n="system_name">智能康复辅助平台</h1>
+      <p class="text-lg opacity-80 max-w-2xl mx-auto mb-6" data-i18n="system_description">基于AI技术的全方位康复解决方案，为患者提供个性化、精准化的康复训练与评估</p>
+      <div class="w-32 h-1 bg-accent mx-auto rounded-full"></div>
+    </div>
+    
+    <!-- 主要内容区 - 三卡片布局 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <!-- 下肢康复卡片 -->
+      <div class="card-gradient rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 border border-accent/30 border-glow fade-in">
+        <!-- 图片展示区域 -->
+        <div class="flex justify-center mb-4">
+          <div class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center pulse-glow">
+            <!-- 机器人腿部SVG -->
+            <svg viewBox="0 0 48 48" class="w-16 h-16 text-accent">
+              <path d="M12 8 Q16 20 24 24 Q32 28 36 40" stroke="currentColor" stroke-width="3" fill="none"/>
+              <circle cx="12" cy="8" r="5" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+              <rect x="34" y="38" width="6" height="6" rx="2" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-3" data-i18n="lower_limb_system" style="height:70px">康莱德康复机器人</h2>
+        <p class="text-light/80 text-base mb-6 text-center" data-i18n="lower_limb_description" style="height:100px">
+          智能机器人辅助下肢康复，步态分析、关节训练与个性化评估，助力术后快速恢复。
+        </p>
+        
+        <!-- 更新后的下肢康复系统图片 -->
+        <div class="system-image-container mb-4">
+          <div class="feature-badge" style="display: none;">步态分析</div>
+          <img src="./static/images/lower_limb_system.png" alt="下肢康复机器人系统 - 步态训练与关节康复" class="system-image">
+          <div class="image-overlay" style="display: none;">
+            <div class="text-center p-4">
+              <div class="text-white font-semibold mb-2">智能步态分析</div>
+              <div class="text-white/80 text-sm">实时监测步态参数，精准评估康复进展</div>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="navigateTo('lower_limb/login.html')" class="w-full py-3 bg-accent hover:bg-accent/80 rounded-xl transition-all duration-300 font-medium" data-i18n="enter_system">
+          进入系统
+        </button>
+      </div>
+      
+      <!-- 上肢康复卡片 -->
+      <div class="card-gradient rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 border border-accent/30 border-glow fade-in" style="animation-delay: 0.2s">
+        <!-- 图片展示区域 -->
+        <div class="flex justify-center mb-4">
+          <div class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center pulse-glow">
+            <!-- 手臂AI SVG -->
+            <svg viewBox="0 0 48 48" class="w-16 h-16 text-accent">
+              <path d="M12 36 Q18 28 24 32 Q30 36 36 24" stroke="currentColor" stroke-width="3" fill="none"/>
+              <circle cx="36" cy="24" r="5" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+              <rect x="10" y="34" width="8" height="8" rx="2" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-3" data-i18n="upper_limb_system" style="height:70px">上肢康复系统</h2>
+        <p class="text-light/80 text-base mb-6 text-center" data-i18n="upper_limb_description" style="height:100px">
+          AI视觉识别手臂动作，实时矫正与反馈，助力脑卒中患者恢复上肢功能。
+        </p>
+        
+        <!-- 更新后的上肢康复系统图片 -->
+        <div class="system-image-container mb-4">
+          <div class="feature-badge" style="display: none;">动作捕捉</div>
+          <img src="./static/images/upper_limb_system.png" alt="上肢康复系统 - AI动作识别与训练" class="system-image">
+          <div class="image-overlay" style="display: none;">
+            <div class="text-center p-4">
+              <div class="text-white font-semibold mb-2">AI动作识别</div>
+              <div class="text-white/80 text-sm">精准捕捉手臂动作，提供实时反馈指导</div>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="navigateTo('upper_limb/index.html')" class="w-full py-3 bg-accent hover:bg-accent/80 rounded-xl transition-all duration-300 font-medium" data-i18n="enter_system">
+          进入系统
+        </button>
+      </div>
+      
+      <!-- 语言康复卡片 -->
+      <div class="card-gradient rounded-2xl p-6 shadow-lg transform transition-all duration-300 hover:scale-105 border border-accent/30 border-glow fade-in" style="animation-delay: 0.4s">
+        <!-- 图片展示区域 -->
+        <div class="flex justify-center mb-4">
+          <div class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center pulse-glow">
+            <!-- 语音AI SVG -->
+            <svg viewBox="0 0 48 48" class="w-16 h-16 text-accent">
+              <rect x="20" y="10" width="8" height="28" rx="4" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+              <path d="M12 24 Q24 40 36 24" stroke="currentColor" stroke-width="3" fill="none"/>
+              <circle cx="24" cy="40" r="4" fill="#64B5F6" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-3" data-i18n="aphasia_system" style="height:70px">语言康复辅助系统</h2>
+        <p class="text-light/80 text-base mb-6 text-center" data-i18n="aphasia_description" style="height:100px">
+          AI语音识别与交流训练，助力失语症患者恢复沟通能力，个性化语音评估与反馈。
+        </p>
+        
+        <!-- 更新后的语言康复系统图片 -->
+        <div class="system-image-container mb-4">
+          <div class="feature-badge" style="display: none;">语音分析</div>
+          <img src="./static/images/aphasia_system.png" alt="语言康复辅助系统 - 语音训练与评估" class="system-image">
+          <div class="image-overlay" style="display: none;">
+            <div class="text-center p-4">
+              <div class="text-white font-semibold mb-2">语音波形分析</div>
+              <div class="text-white/80 text-sm">实时语音对比分析，精准发音指导</div>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="navigateTo('aphasia/index.html')" class="w-full py-3 bg-accent hover:bg-accent/80 rounded-xl transition-all duration-300 font-medium" data-i18n="enter_system">
+          进入系统
+        </button>
+      </div>
+    </div>
+    
+    <!-- 数据统计区域 -->
+    <div class="bg-white/5 rounded-2xl p-6 mb-12 border border-white/10 fade-in" style="animation-delay: 0.6s">
+      <h2 class="text-2xl font-bold text-center mb-8" data-i18n="platform_overview">平台数据概览</h2>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-accent mb-2">1,248</div>
+          <div class="text-light/80" data-i18n="registered_patients">注册患者</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-accent mb-2">86%</div>
+          <div class="text-light/80" data-i18n="recovery_rate">康复有效率</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-accent mb-2">56</div>
+          <div class="text-light/80" data-i18n="cooperating_doctors">合作机构</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-accent mb-2">96%</div>
+          <div class="text-light/80" data-i18n="user_satisfaction">用户满意度</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部信息 -->
+    <footer class="text-center pt-8 border-t border-white/10 fade-in" style="animation-delay: 0.8s">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+              <i class="fa fa-heartbeat text-sm text-light"></i>
+            </div>
+            <span class="font-semibold" data-i18n="system_name">智能康复辅助平台</span>
+          </div>
+          <div class="text-sm opacity-70 mt-1" data-i18n="system_slogan">科技赋能康复，智能改善生活</div>
+        </div>
+        
+        <div class="text-sm opacity-70" data-i18n="copyright">
+          © 2025 智能康复辅助平台 - 基于AI的精准康复解决方案
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- 背景装饰元素 -->
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+    <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+  </div>
+  
+  <!-- 引入国际化管理器和公共JS -->
+  <script src="./static/js/common.js"></script>
+  <script src="./static/js/i18nManage.js"></script>
+  
+  <!-- 页面脚本 -->
+  <script>
+    // 导航功能
+    function navigateTo(path) {
+      // 直接跳转（不检查文件是否存在）
+      window.location.href = path;
+    }
+    
+    // 显示通知
+    function showNotification(message, type = 'info') {
+      // 创建通知元素
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 ${
+        type === 'info' ? 'bg-accent' : 'bg-orange-500'
+      } text-white max-w-sm`;
+      notification.innerHTML = `
+        <div class="flex items-center">
+          <i class="fa fa-${type === 'info' ? 'info-circle' : 'exclamation-triangle'} mr-2"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      
+      // 添加到页面
+      document.body.appendChild(notification);
+      
+      // 3秒后移除
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+    
+    
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 初始化国际化
+      await i18n.init();
+      
+      // 添加语言切换事件
+      document.getElementById('languageSwitch').addEventListener('click', switchLanguage);
+      
+      // 添加加载完成类
+      document.body.classList.add('loaded');
+      
+      // 预加载关键资源
+      const preloadLinks = [
+        'lower_limb/login.html',
+        'lower_limb/doctor.html',
+        'lower_limb/index.html',
+        'upper_limb/index.html',
+        'aphasia/index.html'
+      ];
+      
+      preloadLinks.forEach(link => {
+        const preload = document.createElement('link');
+        preload.rel = 'prefetch';
+        preload.href = link;
+        document.head.appendChild(preload);
+      });
+    });
+    
+    // 性能优化：延迟加载非关键资源
+    window.addEventListener('load', function() {
+      // 延迟加载Font Awesome（如果未加载完成）
+      if (!document.querySelector('i.fa')) {
+        const faLink = document.createElement('link');
+        faLink.rel = 'stylesheet';
+        faLink.href = 'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css';
+        document.head.appendChild(faLink);
+      }
+    });
+  </script>
+</body>
+</html>

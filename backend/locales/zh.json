@@ -1,0 +1,15 @@
+{
+  "api": {
+    "success": "成功",
+    "error": "错误",
+    "session_saved": "会话保存成功",
+    "session_reset": "会话重置成功",
+    "training_started": "训练开始",
+    "training_stopped": "训练停止"
+  },
+  "errors": {
+    "camera_not_available": "摄像头不可用",
+    "pose_detection_failed": "姿态检测失败",
+    "invalid_exercise_type": "无效的训练类型"
+  }
+}

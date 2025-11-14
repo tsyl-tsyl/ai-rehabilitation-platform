@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>双工位下肢康复机器人 — 科学康复 · 精准评估 · 智能辅助</title>
+  <!-- Tailwind CSS（本地） -->
+  <script src="../libs/tailwindcss/tailwindcss.js"></script>
+  <!-- Font Awesome（本地） -->
+  <link href="../libs/font-awesome/font-awesome.min.css" rel="stylesheet">
+  <!-- Three.js 依赖（本地） -->
+  <script src="../libs/three/three.min.js"></script>
+  <script src="../libs/three/OrbitControls.js"></script>
+  <script src="../libs/three/GLTFLoader.js"></script>
+  <!-- 统一样式 -->
+  <link href="../css/style.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0066CC',
+            secondary: '#1E88E5',
+            accent: '#64B5F6',
+            dark: '#0D47A1',
+            light: '#E3F2FD',
+            deep: '#0A3A7A',
+            med: '#1565C0'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-gradient {
+        background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+      }
+      .bg-grid {
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+        background-size: 20px 20px, 100% 100%;
+      }
+      .border-glow {
+        box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s infinite;
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+      }
+      .fade-in {
+        animation: fadeIn 1s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+  <!-- 顶部装饰线条 -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- 顶部导航 -->
+    <header class="flex justify-between items-center mb-10 fade-in">
+      <div class="flex items-center">
+        <a href="../index.html" title="返回首页" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-all">
+                    <i class="fa fa-home text-xl text-light"></i>
+        </a>
+        <div class="text-xl font-semibold">康莱德康复机器人</div>
+      </div>
+      <div class="text-right">
+        <div class="text-sm opacity-80">科学康复 · 精准评估 · 智能辅助</div>
+      </div>
+    </header>
+
+    <!-- 标题区域 -->
+    <div class="text-center mb-12 relative fade-in">
+      <h1 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold mb-3">康莱德康复机器人</h1>
+      <p class="text-lg opacity-80 max-w-2xl mx-auto mb-6">下肢精准康复训练与评估系统</p>
+      <div class="w-32 h-1 bg-accent mx-auto rounded-full"></div>
+    </div>
+
+    <!-- 主要内容区 -->
+    <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in mb-10">
+      <!-- 新增动画区标题（靠左显示） -->
+      <div class="mb-6 flex items-center">
+        <h2 class="text-2xl font-bold text-white drop-shadow text-left">双工位下肢康复机器人 3D 仿真</h2>
+      </div>
+      <div id="viewer" class="rounded-xl overflow-hidden bg-light" style="height:60vh;"></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <!-- 控制面板 -->
+        <div class="bg-white/5 rounded-xl p-6 flex flex-col gap-4">
+          <h2 class="text-lg font-bold mb-2 flex items-center"><i class="fa fa-sliders mr-2 text-accent"></i>训练参数调节</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">左侧臂角度（°）</label>
+              <input id="leftAngle" type="range" min="-30" max="90" value="20" class="accent-accent">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">右侧臂角度（°）</label>
+              <input id="rightAngle" type="range" min="-30" max="90" value="10" class="accent-accent">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">左侧沿导轨水平位置</label>
+              <input id="leftRail" type="range" min="-2" max="2" step="0.01" value="-1.2" class="accent-accent">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">右侧沿导轨水平位置</label>
+              <input id="rightRail" type="range" min="-2" max="2" step="0.01" value="1.2" class="accent-accent">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">训练速度</label>
+              <input id="speed" type="range" min="1" max="10" value="5" class="accent-accent">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-sm text-light/80 mb-1">训练强度</label>
+              <input id="intensity" type="range" min="1" max="10" value="5" class="accent-accent">
+            </div>
+          </div>
+          <div class="flex gap-4 mt-4">
+            <button id="btnStart" class="w-1/2 py-2 bg-accent hover:bg-accent/80 rounded-xl transition-all duration-300 font-medium"><i class="fa fa-play mr-1"></i>开始训练</button>
+            <button id="btnStop" class="w-1/2 py-2 bg-orange-500 hover:bg-orange-400 rounded-xl transition-all duration-300 font-medium"><i class="fa fa-stop mr-1"></i>停止训练</button>
+          </div>
+        </div>
+        <!-- 训练统计 -->
+        <div class="bg-white/5 rounded-xl p-6 flex flex-col gap-4 justify-center">
+          <h2 class="text-lg font-bold mb-2 flex items-center"><i class="fa fa-bar-chart mr-2 text-accent"></i>训练统计</h2>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-sm">训练时间</span>
+              <span class="font-bold text-accent" id="tTime">0.0s</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm">左侧重复</span>
+              <span class="font-bold text-light" id="tLeftRep">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm">右侧重复</span>
+              <span class="font-bold text-light" id="tRightRep">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-sm">完成进度</span>
+              <span class="font-bold text-green-400" id="tProgress">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 新增康复进度、模型训练和评估卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+        <div class="bg-white/5 rounded-xl p-6 flex flex-col items-center border border-accent/10">
+          <h3 class="text-lg font-bold mb-2 text-accent flex items-center"><i class="fa fa-line-chart mr-2"></i>康复进度</h3>
+          <div class="w-full mb-2">
+            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div class="h-full bg-accent rounded-full" style="width: 65%"></div>
+            </div>
+            <div class="flex justify-between text-xs mt-1 text-light/70">
+              <span>已完成</span><span>65%</span>
+            </div>
+          </div>
+          <div class="text-sm opacity-80">系统自动记录康复训练进度，便于医生和患者跟踪效果。</div>
+        </div>
+        <div class="bg-white/5 rounded-xl p-6 flex flex-col items-center border border-accent/10">
+          <h3 class="text-lg font-bold mb-2 text-accent flex items-center"><i class="fa fa-cogs mr-2"></i>模型训练</h3>
+          <div class="w-full mb-2">
+            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div class="h-full bg-green-400 rounded-full" style="width: 80%"></div>
+            </div>
+            <div class="flex justify-between text-xs mt-1 text-light/70">
+              <span>训练完成度</span><span>80%</span>
+            </div>
+          </div>
+          <div class="text-sm opacity-80">AI模型持续优化，提升康复动作识别与评估准确率。</div>
+        </div>
+        <div class="bg-white/5 rounded-xl p-6 flex flex-col items-center border border-accent/10">
+          <h3 class="text-lg font-bold mb-2 text-accent flex items-center"><i class="fa fa-check-circle mr-2"></i>康复评估</h3>
+          <div class="w-full mb-2">
+            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div class="h-full bg-orange-400 rounded-full" style="width: 72%"></div>
+            </div>
+            <div class="flex justify-between text-xs mt-1 text-light/70">
+              <span>评估准确率</span><span>72%</span>
+            </div>
+          </div>
+          <div class="text-sm opacity-80">系统自动生成康复评估报告，辅助医生制定个性化方案。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部信息 -->
+    <footer class="text-center pt-8 border-t border-white/10 fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+              <i class="fa fa-wheelchair text-sm text-light"></i>
+            </div>
+            <span class="font-semibold">康莱德康复机器人</span>
+          </div>
+          <div class="text-sm opacity-70 mt-1">科技赋能康复，智能改善生活</div>
+        </div>
+        <div class="text-sm opacity-70">
+          © 2025 智能康复辅助平台 - 基于AI的精准康复解决方案
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 背景装饰元素 -->
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+    <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+  </div>
+
+  <script>
+    // 基本三维场景与渲染器
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xe9eef6);
+
+    const container = document.getElementById('viewer');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    // 放大视角（更近更大）
+    const camera = new THREE.PerspectiveCamera(50, container.offsetWidth / container.offsetHeight, 0.1, 200);
+    camera.position.set(4.5, 3.2, 6.5); // 更近更大
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0,1,0);
+    controls.update();
+
+    // 光照
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+    scene.add(hemi);
+    const dlight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dlight.position.set(6,10,6);
+    dlight.castShadow = true;
+    dlight.shadow.camera.left = -10;
+    dlight.shadow.camera.right = 10;
+    dlight.shadow.camera.top = 10;
+    dlight.shadow.camera.bottom = -10;
+    scene.add(dlight);
+
+    // 地面参考
+    const grid = new THREE.GridHelper(12,24,'#cbd6e6','#e6eef8');
+    grid.position.y = -0.01;
+    scene.add(grid);
+
+    // ====== 机械结构参数（保持原样） ======
+    const railLength = 8;
+    const railMaterial = new THREE.MeshStandardMaterial({color:0x1f1f1f, metalness:0.6, roughness:0.4});
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(railLength, 0.12, 0.6), railMaterial);
+    rail.position.set(0, 0.05, 0);
+    scene.add(rail);
+    const wingL = new THREE.Mesh(new THREE.BoxGeometry(railLength, 0.06, 0.16), railMaterial);
+    wingL.position.set(0, 0.18, -0.23);
+    const wingR = wingL.clone(); wingR.position.z = 0.23;
+    scene.add(wingL, wingR);
+
+    function makeCarriage(color){
+      const g = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.18,1.0), new THREE.MeshStandardMaterial({color:color}));
+      base.position.y = 0.12; g.add(base);
+      const wheelGeo = new THREE.CylinderGeometry(0.22,0.22,0.12,20);
+      const wheelMat = new THREE.MeshStandardMaterial({color:0xd9d9d9});
+      const wpos = [[-0.45,-0.45],[0.45,-0.45],[-0.45,0.45],[0.45,0.45]];
+      wpos.forEach(p=>{ const w = new THREE.Mesh(wheelGeo,wheelMat); w.rotation.z = Math.PI/2; w.position.set(p[0],0.02,p[1]); g.add(w); });
+      return g;
+    }
+    const carriageL = makeCarriage(0x7f8fa6); carriageL.position.x = -1.2; carriageL.position.y = 0; scene.add(carriageL);
+    const carriageR = makeCarriage(0x7f8fa6); carriageR.position.x = 1.2; carriageR.position.y = 0; scene.add(carriageR);
+
+    // 立柱与加强支撑（同上）
+    function addColumn(parent){
+      const col = new THREE.Mesh(new THREE.BoxGeometry(0.2,2.6,0.2), new THREE.MeshStandardMaterial({color:0x2b2b2b}));
+      col.position.set(0,1.3,0); parent.add(col);
+      const braceMat = new THREE.MeshStandardMaterial({color:0x0d0d0d});
+      const b1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.8,12), braceMat); b1.rotation.z = Math.PI/6; b1.position.set(-0.25,0.7,-0.2);
+      const b2 = b1.clone(); b2.rotation.z = -Math.PI/6; b2.position.x = 0.25; b2.position.z = -0.2; parent.add(b1,b2);
+      const slider = new THREE.Group(); const sled = new THREE.Mesh(new THREE.BoxGeometry(0.26,0.18,0.26), new THREE.MeshStandardMaterial({color:0xbfcad6})); sled.position.set(0,1.6,0); slider.add(sled); parent.add(slider);
+      return {col,slider};
+    }
+    const leftColumnRoot = new THREE.Group(); leftColumnRoot.position.set(-1.2,0,0); scene.add(leftColumnRoot);
+    const rightColumnRoot = new THREE.Group(); rightColumnRoot.position.set(1.2,0,0); scene.add(rightColumnRoot);
+    const leftParts = addColumn(leftColumnRoot); const rightParts = addColumn(rightColumnRoot);
+
+    // 左侧机构
+    const greenMotor = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.3,0.28), new THREE.MeshStandardMaterial({color:0x2fb14b,metalness:0.3,roughness:0.4}));
+    greenMotor.position.set(-0.5,1.9,0.45); leftColumnRoot.add(greenMotor);
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.0,20), new THREE.MeshStandardMaterial({color:0x333})); shaft.rotation.z = Math.PI/2; shaft.position.set(-0.1,1.9,0.45); leftColumnRoot.add(shaft);
+    const arcOuter = new THREE.Mesh(new THREE.TorusGeometry(0.45,0.12,16,40,Math.PI), new THREE.MeshStandardMaterial({color:0xcfd8e3})); arcOuter.rotation.x = Math.PI/2; arcOuter.position.set(0.2,1.6,0.45); leftColumnRoot.add(arcOuter);
+    const arcShell = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.5,0.28), new THREE.MeshStandardMaterial({color:0xd7dfe8})); arcShell.position.set(0.2,1.45,0.45); leftColumnRoot.add(arcShell);
+    for(let i=0;i<3;i++){ const rib = new THREE.Mesh(new THREE.BoxGeometry(0.02,0.5,0.28), new THREE.MeshStandardMaterial({color:0xb0b9c6})); rib.position.set(0.2,1.35-0.15*i,0.59); leftColumnRoot.add(rib); }
+    const leftArm = new THREE.Group(); const armPlate = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.12,0.26), new THREE.MeshStandardMaterial({color:0x9aa7b9})); armPlate.position.set(0.7,1.15,0.45); leftArm.add(armPlate);
+    for(let i=0;i<3;i++){ const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.02,16), new THREE.MeshStandardMaterial({color:0x2c3e50})); hole.rotation.x = Math.PI/2; hole.position.set(0.4+0.2*i,1.15,0.58); leftArm.add(hole);} leftColumnRoot.add(leftArm);
+    const flange = new THREE.Mesh(new THREE.BoxGeometry(0.4,0.06,0.4), new THREE.MeshStandardMaterial({color:0x8f98a6})); flange.position.set(0.2,1.35,0.45); leftColumnRoot.add(flange);
+
+    // 右侧机构
+    const rightMotorCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.5,24), new THREE.MeshStandardMaterial({color:0xd9d9d9})); rightMotorCyl.rotation.z = Math.PI/2; rightMotorCyl.position.set(0.5,1.9,0.0); rightColumnRoot.add(rightMotorCyl);
+    const obs = new THREE.Mesh(new THREE.CircleGeometry(0.12,20), new THREE.MeshStandardMaterial({color:0x7a7a7a})); obs.rotation.y = Math.PI/2; obs.position.set(0.78,1.9,0.0); rightColumnRoot.add(obs);
+    const rightArmGroup = new THREE.Group(); const Lvert = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.9,0.2), new THREE.MeshStandardMaterial({color:0xb2c0cf})); Lvert.position.set(0.95,1.6,0); const Lhor = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.16,0.2), new THREE.MeshStandardMaterial({color:0xb2c0cf})); Lhor.position.set(1.2,1.25,0); rightArmGroup.add(Lvert,Lhor);
+    const hinge = new THREE.Mesh(new THREE.SphereGeometry(0.08,16,12), new THREE.MeshStandardMaterial({color:0x555})); hinge.position.set(0.85,1.85,0); rightArmGroup.add(hinge);
+    const rollerAxle = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.28,12), new THREE.MeshStandardMaterial({color:0x333})); rollerAxle.rotation.z = Math.PI/2; rollerAxle.position.set(1.45,1.25,0); const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.22,20), new THREE.MeshStandardMaterial({color:0xe2e2e2})); roller.rotation.x = Math.PI/2; roller.position.set(1.45,1.25,0); rightArmGroup.add(rollerAxle,roller); rightColumnRoot.add(rightArmGroup);
+    const slot = new THREE.Mesh(new THREE.BoxGeometry(0.06,1.4,0.02), new THREE.MeshStandardMaterial({color:0x9aa3ad})); slot.position.set(0,1.3,0.12); rightColumnRoot.add(slot);
+    function addCornerBraces(parent){ const tri = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.5), new THREE.MeshStandardMaterial({color:0x2b2b2b})); tri.position.set(0,0.18,0.32); tri.rotation.x = -Math.PI/10; parent.add(tri); }
+    addCornerBraces(carriageL); addCornerBraces(carriageR);
+
+    // 患者模型：使用 GLTFLoader 加载 glb（Sketchfab 免费模型）
+    const loader = new THREE.GLTFLoader();
+    const patientLeftGroup = new THREE.Group(); scene.add(patientLeftGroup);
+    const patientRightGroup = new THREE.Group(); scene.add(patientRightGroup);
+
+    // Fallback capsule factory (用于加载失败时的占位)
+    function createCapsuleMesh(radius, length, material){
+      const group = new THREE.Group();
+      const cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, Math.max(0.001, length), 12), material);
+      cyl.position.y = 0; group.add(cyl);
+      const sphereTop = new THREE.Mesh(new THREE.SphereGeometry(radius, 12, 8), material); sphereTop.position.y = length/2;
+      const sphereBot = sphereTop.clone(); sphereBot.position.y = -length/2; group.add(sphereTop, sphereBot);
+      return group;
+    }
+
+    const skinMat = new THREE.MeshStandardMaterial({color:0xffd1b3});
+
+    // 说明：将 Sketchfab 上你授权的模型下载为 .glb 后放置在 ./models/ 下
+    // 推荐免费模型（示例）：
+    //  - https://sketchfab.com/3d-models/low-poly-human-male-... （请在 Sketchfab 上确认免费授权并下载 glb）
+    // 把下载后的文件重命名为 patient_left.glb / patient_right.glb 放在同目录的 models 文件夹
+
+    function loadPatientModel(url, group, opts){
+      loader.load(url, gltf=>{
+        // 清空已有
+        while(group.children.length) group.remove(group.children[0]);
+        const model = gltf.scene || gltf.scenes[0];
+        model.traverse(n=>{ if(n.isMesh){ n.castShadow = true; n.receiveShadow = true; } });
+        // 自动缩放到合理尺寸（粗略处理）
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const scale = (opts && opts.scale) ? opts.scale : (size > 0 ? 0.6/size : 1);
+        model.scale.setScalar(scale);
+        model.position.set(0, 0.9, 0); // 基准高度，可根据需要调整
+        model.rotation.y = (opts && opts.rotationY) ? opts.rotationY : 0;
+        group.add(model);
+      }, xhr=>{}, err=>{
+        console.warn('模型加载失败，使用占位 capsule：', url, err);
+        // fallback
+        const fall = createCapsuleMesh(0.12,0.6,skinMat);
+        fall.rotation.z = (opts && opts.rotationZ) ? opts.rotationZ : 0;
+        fall.position.set((opts && opts.x) ? opts.x : 0, 1.05, (opts && opts.z) ? opts.z : 0);
+        group.add(fall);
+      });
+    }
+
+    // 尝试加载（相对路径）
+    loadPatientModel('./models/patient_left.glb', patientLeftGroup, {rotationY:-0.6, x:0.9});
+    loadPatientModel('./models/patient_right.glb', patientRightGroup, {rotationY:0.3, x:-0.9});
+
+    // 如果你想直接使用 Sketchfab 的托管链接（注意 CORS/下载规则），也可以把 URL 填到上面 loadPatientModel 的第一个参数中。
+
+    // ===== 交互与动画变量（同前） =====
+    const leftAngleInput = document.getElementById('leftAngle');
+    const rightAngleInput = document.getElementById('rightAngle');
+    const leftRailInput = document.getElementById('leftRail');
+    const rightRailInput = document.getElementById('rightRail');
+    const speedInput = document.getElementById('speed');
+    const intensityInput = document.getElementById('intensity');
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+
+    let training = false; let time = 0; let leftReps = 0, rightReps = 0;
+    btnStart.addEventListener('click',()=>training=true);
+    btnStop.addEventListener('click',()=>training=false);
+    const deg = a => a*Math.PI/180;
+
+    // 页面首次加载自动开始训练
+    window.addEventListener('DOMContentLoaded', function() {
+      training = true;
+    });
+
+    let last = performance.now();
+    function animate(){
+      requestAnimationFrame(animate);
+      const now = performance.now(); const dt = (now-last)/1000; last = now;
+
+      const lpos = parseFloat(leftRailInput.value); const rpos = parseFloat(rightRailInput.value);
+      leftColumnRoot.position.x = lpos; carriageL.position.x = lpos;
+      rightColumnRoot.position.x = rpos; carriageR.position.x = rpos;
+
+      const tgtLeft = deg(parseFloat(leftAngleInput.value));
+      const tgtRight = deg(parseFloat(rightAngleInput.value));
+      const speed = parseFloat(speedInput.value); const intensity = parseFloat(intensityInput.value);
+
+      if(training){
+        time += dt;
+        const leftOsc = Math.sin(time*speed*0.9) * (Math.abs(tgtLeft) * (0.6 + intensity/20));
+        leftArm.rotation.z = -0.3 + leftOsc*0.5;
+        const rightOsc = Math.sin(time*speed*1.1 + 1.2) * (Math.abs(tgtRight) * (0.6 + intensity/22));
+        rightArmGroup.rotation.z = rightOsc*0.5;
+        leftColumnRoot.position.x = lpos + Math.sin(time*0.6)*intensity/60; carriageL.position.x = leftColumnRoot.position.x;
+        rightColumnRoot.position.x = rpos + Math.cos(time*0.6)*intensity/60; carriageR.position.x = rightColumnRoot.position.x;
+        if((Math.sin((time-dt)*speed*0.9) <= 0) && (Math.sin(time*speed*0.9) > 0)) leftReps++;
+        if((Math.sin((time-dt)*speed*1.1 + 1.2) <= 0) && (Math.sin(time*speed*1.1 + 1.2) > 0)) rightReps++;
+      } else {
+        leftArm.rotation.z = -0.3 + tgtLeft*0.2;
+        rightArmGroup.rotation.z = tgtRight*0.2;
+      }
+
+      // 同步患者模型位置到对应工位（考虑模型中心点与缩放）
+      if(patientLeftGroup.children.length){ patientLeftGroup.position.set(leftColumnRoot.position.x + 0.85, 0, 0.45); }
+      if(patientRightGroup.children.length){ patientRightGroup.position.set(rightColumnRoot.position.x - 0.85, 0, 0); }
+
+      document.getElementById('tTime').textContent = time.toFixed(1) + 's';
+      document.getElementById('tLeftRep').textContent = leftReps; document.getElementById('tRightRep').textContent = rightReps;
+      const progress = Math.min(100, Math.floor(((leftReps+rightReps)/2) % 20 * 5));
+      document.getElementById('tProgress').textContent = progress + '%';
+
+      renderer.render(scene,camera);
+    }
+    animate();
+
+    // resize handling
+  window.addEventListener('resize', ()=>{ renderer.setSize(container.offsetWidth, container.offsetHeight); camera.aspect = container.offsetWidth / container.offsetHeight; camera.updateProjectionMatrix(); });
+
+    // 快速交互
+    leftAngleInput.addEventListener('input', ()=>{ if(!training){ leftArm.rotation.z = -0.3 + deg(parseFloat(leftAngleInput.value))*0.2 } });
+    rightAngleInput.addEventListener('input', ()=>{ if(!training){ rightArmGroup.rotation.z = deg(parseFloat(rightAngleInput.value))*0.2 } });
+
+  </script>
+</body>
+</html>

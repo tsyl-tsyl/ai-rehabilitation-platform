@@ -1,0 +1,17 @@
+{
+  "learning_rate": 0.001,
+  "batch_size": 8,
+  "epochs": 5,
+  "model_name": "lower_limb_model_120850",
+  "category": "lower_limb",
+  "training_date": "2025-11-12T12:08:50.709455",
+  "final_loss": 6.930772067370583e-10,
+  "final_accuracy": 1.0,
+  "final_val_loss": 0.0,
+  "final_val_accuracy": 1.0,
+  "model_architecture": "Robot Rehabilitation DNN",
+  "data_source": "real_data",
+  "training_samples": 172,
+  "input_dimension": 4,
+  "num_classes": 3
+}

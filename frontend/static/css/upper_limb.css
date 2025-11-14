@@ -1,0 +1,242 @@
+/* 上肢康复系统特定样式 */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 75%; /* 4:3 宽高比 */
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+#videoElement, #canvasElement, .processed-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.processed-image-container {
+    z-index: 2;
+}
+
+.angle-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.angle-group {
+    background: var(--light-color);
+    padding: var(--spacing-sm);
+    border-radius: 8px;
+}
+
+.angle-group h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+    border-bottom: 1px solid #ddd;
+    padding-bottom: var(--spacing-xs);
+}
+
+.angle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    background: white;
+    border-radius: 4px;
+}
+
+.angle-value {
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    color: var(--primary-color);
+    min-width: 60px;
+    text-align: center;
+}
+
+.feedback {
+    background-color: var(--light-color);
+    padding: var(--spacing-sm);
+    border-radius: 8px;
+    margin-top: var(--spacing-sm);
+    min-height: 100px;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.feedback-item {
+    padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: var(--font-size-sm);
+}
+
+.feedback-item.correction {
+    border-left: 4px solid var(--danger-color);
+}
+
+.feedback-item.encouragement {
+    border-left: 4px solid var(--success-color);
+}
+
+.progress-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.progress-chart {
+    height: 200px;
+    background-color: var(--light-color);
+    border-radius: 8px;
+    padding: var(--spacing-sm);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+}
+
+.progress-bar {
+    width: 30px;
+    background-color: var(--primary-color);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+}
+
+.progress-bar-label {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+}
+
+/* 医生端特定样式 */
+.doctor-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.doctor-card h2 {
+    color: var(--doctor-color);
+}
+
+.doctor-angle-value {
+    color: var(--doctor-color);
+}
+
+.doctor-table th {
+    background-color: var(--doctor-color);
+}
+
+.patient-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+}
+
+.patient-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: var(--spacing-sm);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.patient-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.patient-card.selected {
+    border: 2px solid var(--doctor-color);
+}
+
+.patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.patient-name {
+    font-weight: bold;
+    font-size: var(--font-size-lg);
+}
+
+.patient-details {
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: #666;
+}
+
+.model-training-section {
+    margin-top: var(--spacing-md);
+}
+
+.training-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.training-progress {
+    margin-top: var(--spacing-sm);
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--doctor-color);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .angle-display {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .training-controls {
+        flex-direction: column;
+    }
+    
+    .patient-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .angle-group {
+        padding: var(--spacing-xs);
+    }
+    
+    .angle-item {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-xs);
+    }
+}

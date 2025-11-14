@@ -1,0 +1,298 @@
+{
+    "common": {
+        "language": "Language",
+        "save": "Save",
+        "cancel": "Cancel",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "home": "Home",
+        "back": "Back",
+        "confirm": "Confirm"
+    },
+    "page": {
+        "title": "Upper Limb Rehabilitation Training System",
+        "subtitle": "AI-based Upper Limb Rehabilitation Training and Assessment Platform"
+    },
+    "camera": {
+        "sectionTitle": "📷 Real-time Rehabilitation Training",
+        "offText": "Camera Off",
+        "hint": "Click \"Start Camera\" to begin training",
+        "startButton": "Start Camera",
+        "stopButton": "Stop Camera"
+    },
+    "training": {
+        "sectionTitle": "📊 Training Statistics",
+        "currentExercise": "Current Exercise",
+        "completedReps": "Completed Reps",
+        "accuracy": "Accuracy",
+        "trainingTime": "Training Time",
+        "startButton": "Start Training",
+        "stopButton": "Stop Training",
+        "resetButton": "Reset Training",
+        "notStarted": "Not Started"
+    },
+    "rehabPlan": {
+        "sectionTitle": "📋 Rehabilitation Plan",
+        "customizeButton": "Customize Settings"
+    },
+    "aiModel": {
+        "sectionTitle": "🤖 AI Model",
+        "currentModel": "Current Model:",
+        "accuracy": "Accuracy:",
+        "status": "Status:",
+        "loadButton": "Load Latest Model",
+        "notConnected": "Not Connected",
+        "loaded": "Loaded"
+    },
+    "feedback": {
+        "sectionTitle": "💬 Real-time Feedback",
+        "waiting": "Waiting for training to start..."
+    },
+    "history": {
+        "sectionTitle": "📈 Training History",
+        "trend": "Training History Trend",
+        "date": "Training Date"
+    },
+    "exercises": {
+        "shoulder_flexion": "Shoulder Flexion",
+        "shoulder_abduction": "Shoulder Abduction",
+        "elbow_flexion": "Elbow Flexion",
+        "wrist_flexion": "Wrist Flexion",
+        "arm_rotation": "Arm Rotation"
+    },
+    "difficulty": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+    },
+    "messages": {
+        "cameraStarted": "Camera started successfully",
+        "cameraStopped": "Camera stopped",
+        "trainingStarted": "Training started!",
+        "trainingStopped": "Training stopped!",
+        "trainingReset": "Training data reset",
+        "modelLoaded": "Model loaded successfully",
+        "customizationSaved": "Customization saved successfully",
+        "noModelFound": "No published model found, please publish a model in the training page first",
+        "noExerciseSelected": "Please select an exercise first",
+        "noCameraStarted": "Please start the camera first",
+        "startExercise": "Starting {exercise} training, please follow the instructions",
+        "exerciseProgress": "Great! Completed {completed}/{target} exercises",
+        "exerciseCompleted": "Congratulations! Completed all {target} exercises",
+        "adjustmentNeeded": "Action needs adjustment, please refer to the demonstration",
+        "allExercisesCompleted": "Congratulations! You have completed all rehabilitation exercises!",
+        "planCompleted": "Rehabilitation plan completed!"
+    },
+    "customization": {
+        "modalTitle": "Personalized Rehabilitation Settings",
+        "patientName": "Patient Name",
+        "patientNamePlaceholder": "Enter patient name",
+        "targetReps": "Target Repetitions",
+        "difficulty": "Training Difficulty",
+        "selectExercises": "Select Rehabilitation Exercises"
+    },
+    "mediapipe": {
+        "title": "Upper Limb Rehabilitation - MediaPipe",
+        "start_detection": "Start Detection",
+        "stop_detection": "Stop Detection",
+        "camera_feed": "Camera Feed",
+        "skeleton_overlay": "Skeleton Overlay",
+        "joint_angles": "Joint Angles",
+        "exercise_metrics": "Exercise Metrics",
+        "repetitions": "Repetitions",
+        "range_of_motion": "Range of Motion",
+        "smoothness": "Smoothness",
+        "save_session": "Save Session",
+        "reset_session": "Reset Session",
+        "language": "Language",
+        "settings": "Settings"
+    },
+    "tsf": {
+        "title": "Upper Limb Rehabilitation - Transformer",
+        "start_training": "Start Training",
+        "stop_training": "Stop Training",
+        "exercise_type": "Exercise Type",
+        "shoulder_flexion": "Shoulder Flexion",
+        "elbow_flexion": "Elbow Flexion",
+        "wrist_rotation": "Wrist Rotation",
+        "difficulty_level": "Difficulty Level",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "real_time_feedback": "Real-time Feedback",
+        "performance_score": "Performance Score",
+        "correct_posture": "Correct Posture",
+        "incorrect_posture": "Incorrect Posture",
+        "training_duration": "Training Duration",
+        "calories_burned": "Calories Burned",
+        "export_data": "Export Data",
+        "view_progress": "View Progress"
+    }
+}
+
+{
+  "language": {
+    "rehabilitation": {
+      "system": "Language Rehabilitation Assistant System"
+    },
+    "aphasia": {
+      "rehabilitation": {
+        "ai": "Aphasia Rehabilitation · AI Speech Assessment · Intelligent Assistance"
+      }
+    }
+  },
+  "rehabilitation": {
+    "reading": {
+      "train": "Rehabilitation Reading Training"
+    }
+  },
+  "image": {
+    "assisted": {
+      "waveform": "Image Assisted · Waveform Comparison · Progressive Practice"
+    }
+  },
+  "select": {
+    "practice": {
+      "type": "Select Practice Type"
+    }
+  },
+  "vowel": {
+    "practice": "Vowel Practice"
+  },
+  "basic": {
+    "pronunciation": {
+      "training": "Basic Pronunciation Training"
+    },
+    "vocabulary": {
+      "training": "Basic Vocabulary Training"
+    }
+  },
+  "word": {
+    "practice": "Word Practice"
+  },
+  "life": {
+    "phrases": "Life Phrases"
+  },
+  "daily": {
+    "expression": {
+      "training": "Daily Expression Training"
+    }
+  },
+  "practice": {
+    "difficulty": "Practice Difficulty",
+    "progress": "Practice Progress",
+    "time": "Practice Time"
+  },
+  "beginner": "Beginner",
+  "intermediate": "Intermediate",
+  "advanced": "Advanced",
+  "current": {
+    "progress": "Current Progress",
+    "practice": "Current Practice"
+  },
+  "completed": "Completed",
+  "average": {
+    "accuracy": "Average Accuracy"
+  },
+  "practice": {
+    "content": "Practice Content:"
+  },
+  "select": {
+    "practice": {
+      "to": {
+        "start": "Please select a practice type to start training"
+      }
+    }
+  },
+  "play": {
+    "example": "Play Example"
+  },
+  "show": {
+    "text": "Show Text"
+  },
+  "next": "Next",
+  "pronunciation": {
+    "waveform": {
+      "comparison": "Pronunciation Waveform Comparison"
+    }
+  },
+  "standard": {
+    "pronunciation": "Standard Pronunciation"
+  },
+  "not": {
+    "played": "Not Played",
+    "recorded": "Not Recorded"
+  },
+  "processing": "Processing...",
+  "your": {
+    "pronunciation": "Your Pronunciation"
+  },
+  "matching": {
+    "degree": "Matching Degree"
+  },
+  "show": {
+    "analysis": {
+      "after": {
+        "recording": "Analysis results will be shown after recording"
+      }
+    }
+  },
+  "start": {
+    "recording": "Start Recording"
+  },
+  "stop": {
+    "recording": "Stop Recording"
+  },
+  "play": {
+    "my": {
+      "recording": "Play My Recording"
+    }
+  },
+  "comparison": {
+    "analysis": "Comparison Analysis"
+  },
+  "recording": {
+    "please": {
+      "read": "Recording... Please read along"
+    }
+  },
+  "pronunciation": {
+    "analysis": {
+      "settings": "Pronunciation Analysis and Settings"
+    }
+  },
+  "voice": {
+    "settings": "Voice Settings"
+  },
+  "personalized": {
+    "model": {
+      "training": "Personalized Model Training"
+    }
+  },
+  "select": {
+    "voice": "Select Voice:"
+  },
+  "loading": "Loading...",
+  "speech": {
+    "rate": "Speech Rate:"
+  },
+  "volume": "Volume:",
+  "intelligent": {
+    "rehabilitation": {
+      "platform": "Intelligent Rehabilitation Platform"
+    }
+  },
+  "tech": {
+    "empower": {
+      "rehabilitation": "Technology Empowers Rehabilitation, Intelligence Improves Life"
+    }
+  },
+  "ai": {
+    "based": {
+      "precise": {
+        "rehabilitation": "AI-based Precise Rehabilitation Solution"
+      }
+    }
+  }
+}

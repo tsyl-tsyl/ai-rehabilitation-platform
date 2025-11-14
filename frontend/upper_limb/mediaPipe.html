@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="data_collection">数据采集 - MobileNetV2 上肢康复训练系统</title>
+    <!-- 使用本地 Tailwind CSS -->
+    <script src="../libs/tailwindcss/tailwindcss.js"></script>
+    <!-- 使用本地 MediaPipe 依赖 -->
+    <script src="../libs/mediapipe/camera_utils.js"></script>
+    <script src="../libs/mediapipe/drawing_utils.js"></script>
+    <script src="../libs/mediapipe/pose.js"></script>
+       <link rel="stylesheet" href="../libs/font-awesome/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0066CC',
+                        secondary: '#1E88E5',
+                        accent: '#64B5F6',
+                        dark: '#0D47A1',
+                        light: '#E3F2FD',
+                        deep: '#0A3A7A',
+                        med: '#1565C0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-gradient {
+                background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+            }
+            .border-glow {
+                box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+            }
+            .fade-in {
+                animation: fadeIn 1s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+    
+    <style>
+        /* 进度条样式 */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 50%; /* 第一步50% */
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step-active .step-number {
+            background: #4facfe;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+        
+        .step-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .step-active .step-label {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        /* 临时消息样式 */
+        .temp-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            animation-fill-mode: forwards;
+        }
+
+        .temp-message.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .temp-message.error {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .temp-message.info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* 视频容器样式 */
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: #000;
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        #webcam {
+            width: 100%;
+            height: auto;
+            display: block;
+            transform: scaleX(-1);
+        }
+        
+        #output_canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            transform: scaleX(-1);
+        }
+
+        .video-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .video-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        /* 动作按钮样式 */
+        .action-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .action-btn:hover::after {
+            left: 100%;
+        }
+
+        /* 加载指示器 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 按钮基础样式 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden">
+    <!-- 顶部进度条 -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- 头部 -->
+        <header class="flex justify-between items-center mb-8 fade-in">
+            <div class="flex items-center">
+                <a href="index.html" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 hover:bg-white/20 transition-colors" data-i18n-title="return_home" title="返回首页">
+                    <i class="fas fa-home text-xl text-light"></i>
+                </a>
+                <div class="text-xl font-semibold" data-i18n="system_title">MobileNetV2 上肢康复训练系统</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm opacity-80" data-i18n="system_subtitle">基于MediaPipe姿态估计的上肢康复动作采集与训练平台</div>
+                <!-- 语言选择器 
+                <select id="languageSelector" class="mt-2 bg-white/10 border border-white/20 rounded px-2 py-1 text-sm">
+                    <option value="zh">中文</option>
+                    <option value="en">English</option>
+                </select>-->
+                <button class="lang-btn" onclick="toggleLanguage()">
+                    <span id="lang-text">English</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 进度指示器 -->
+        <div class="max-w-2xl mx-auto mb-8 fade-in">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-steps">
+                <div class="progress-step step-active" onclick="window.location.href='mediaPipe.html'">
+                    <div class="step-number">1</div>
+                    <div class="step-label" data-i18n="data_collection">数据采集</div>
+                </div>
+                <div class="progress-step" onclick="window.location.href='tranTSF.html'">
+                    <div class="step-number">2</div>
+                    <div class="step-label" data-i18n="model_training">模型训练</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据采集面板 -->
+        <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in">
+            <h2 class="text-2xl font-bold mb-4 text-center" data-i18n="upper_limb_data_collection">📷 上肢康复数据采集</h2>
+            
+            <div class="video-container" id="videoContainer">
+                <video id="webcam" playsinline style="display: none;"></video>
+                <canvas id="output_canvas" style="display: none;"></canvas>
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <i class="fas fa-video"></i>
+                    <div data-i18n="camera_off">摄像头未开启</div>
+                    <div class="text-sm opacity-80 mt-2" data-i18n="turn_on_camera_tip">点击"开启摄像头"开始采集</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 my-6 justify-center">
+                <button id="cameraToggle" onclick="toggleCamera()" class="btn btn-primary">
+                    <i class="fas fa-camera mr-2"></i><span data-i18n="turn_on_camera">开启摄像头</span>
+                </button>
+                <button id="collectionToggle" onclick="toggleCollection()" disabled class="btn bg-white/10 hover:bg-white/20">
+                    <i class="fas fa-record-vinyl mr-2"></i><span data-i18n="start_collection">开始采集</span>
+                </button>
+                <button id="sendDataBtn" onclick="sendPoseDataToServer()" class="btn btn-secondary">
+                    <span id="sendDataText"><i class="fas fa-paper-plane mr-2"></i><span data-i18n="send_data">发送数据</span></span>
+                    <span id="sendDataLoader" class="loader hidden"></span>
+                </button>
+            </div>
+
+            <!-- 采集状态卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="collected_samples">已采集样本</div>
+                    <div class="text-2xl font-bold"><span id="collectedSamples">0</span> / <span id="targetSamples">100</span></div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="current_action">当前动作</div>
+                    <div class="text-xl font-bold" id="currentAction" data-i18n="no_action_selected">未选择</div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="status">状态</div>
+                    <div class="text-xl font-bold" id="collectionStatus" data-i18n="ready">等待开始</div>
+                </div>
+            </div>
+
+            <!-- 动作选择 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-center" data-i18n="select_rehab_action">选择康复动作</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <button id="shoulderFlexionBtn" onclick="setAction('shoulder_flexion', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="shoulder_flexion">
+                        肩部屈曲
+                    </button>
+                    <button id="shoulderAbductionBtn" onclick="setAction('shoulder_abduction', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="shoulder_abduction">
+                        肩部外展
+                    </button>
+                    <button id="elbowFlexionBtn" onclick="setAction('elbow_flexion', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="elbow_flexion">
+                        肘部屈曲
+                    </button>
+                    <button id="wristFlexionBtn" onclick="setAction('wrist_flexion', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="wrist_flexion">
+                        腕部屈曲
+                    </button>
+                    <button id="armRotationBtn" onclick="setAction('arm_rotation', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="arm_rotation">
+                        手臂旋转
+                    </button>
+                </div>
+            </div>
+
+            <!-- 姿态数据预览 -->
+            <div class="bg-white/10 p-4 rounded-lg">
+                <h4 class="font-bold mb-3 text-center" data-i18n="pose_data_preview">姿态数据预览</h4>
+                <div id="poseData" class="font-mono text-sm" data-i18n="waiting_data_collection">等待数据采集...</div>
+            </div>
+        </div>
+    </div>
+<script src="../static/js/common.js"></script>
+    <script>
+        // 国际化支持
+        const translations = {
+            'zh-CN': {
+                // 系统信息
+                "system_title": "MobileNetV2 上肢康复训练系统",
+                "system_subtitle": "基于MediaPipe姿态估计的上肢康复动作采集与训练平台",
+                "return_home": "返回首页",
+                // 语言切换按钮
+                langText: 'English',
+                
+                // 进度指示器
+                "data_collection": "数据采集",
+                "model_training": "模型训练",
+                
+                // 数据采集面板
+                "upper_limb_data_collection": "📷 上肢康复数据采集",
+                "camera_off": "摄像头未开启",
+                "turn_on_camera_tip": "点击\"开启摄像头\"开始采集",
+                "turn_on_camera": "开启摄像头",
+                "turn_off_camera": "关闭摄像头",
+                "start_collection": "开始采集",
+                "stop_collection": "停止采集",
+                "send_data": "发送数据",
+                "sending": "发送中...",
+                
+                // 状态卡片
+                "collected_samples": "已采集样本",
+                "current_action": "当前动作",
+                "status": "状态",
+                "no_action_selected": "未选择",
+                "ready": "准备就绪",
+                "collecting": "采集中...",
+                
+                // 动作选择
+                "select_rehab_action": "选择康复动作",
+                "shoulder_flexion": "肩部屈曲",
+                "shoulder_abduction": "肩部外展",
+                "elbow_flexion": "肘部屈曲",
+                "wrist_flexion": "腕部屈曲",
+                "arm_rotation": "手臂旋转",
+                
+                // 姿态数据预览
+                "pose_data_preview": "姿态数据预览",
+                "waiting_data_collection": "等待数据采集...",
+                
+                // 消息提示
+                "camera_started": "摄像头已开启",
+                "camera_stopped": "摄像头已关闭",
+                "select_action_first": "请先选择一个动作",
+                "turn_on_camera_first": "请先开启摄像头",
+                "collecting_action": "采集中: {action}",
+                "collection_stopped": "采集已停止，已采集 {count} 个样本",
+                "collection_stopped_tip": "已停止采集（数据保存在本地缓冲区，点击发送数据上传）",
+                "no_data_to_send": "没有数据可发送",
+                "successfully_collected": "已成功采集 {target} 个 {action} 样本！",
+                "successfully_uploaded": "已成功上传 {count} 个样本，正在跳转...",
+                "upload_failed": "样本上传失败，已回滚到本地缓存",
+                "selected_action": "已选择: {action}",
+                
+                // 错误消息
+                "mediapipe_init_failed": "MediaPipe初始化失败，请刷新页面重试",
+                "video_element_not_found": "未找到视频或画布元素",
+                "camera_permission_denied": "摄像头权限被拒绝，请允许摄像头访问",
+                "no_camera_device": "未找到摄像头设备",
+                "camera_not_supported": "浏览器不支持摄像头功能",
+                "camera_constraints_error": "无法满足摄像头参数要求",
+                "cannot_start_camera": "无法启动摄像头",
+                "system_error": "系统发生错误，请查看控制台"
+            },
+           'en-US': {
+                // 系统信息
+                "system_title": "MobileNetV2 Upper Limb Rehabilitation Training System",
+                "system_subtitle": "Upper limb rehabilitation action collection and training platform based on MediaPipe pose estimation",
+                "return_home": "Return to Home",
+
+                langText: '中文',
+                
+                // 进度指示器
+                "data_collection": "Data Collection",
+                "model_training": "Model Training",
+                
+                // 数据采集面板
+                "upper_limb_data_collection": "📷 Upper Limb Rehabilitation Data Collection",
+                "camera_off": "Camera Off",
+                "turn_on_camera_tip": "Click \"Turn On Camera\" to start collection",
+                "turn_on_camera": "Turn On Camera",
+                "turn_off_camera": "Turn Off Camera",
+                "start_collection": "Start Collection",
+                "stop_collection": "Stop Collection",
+                "send_data": "Send Data",
+                "sending": "Sending...",
+                
+                // 状态卡片
+                "collected_samples": "Collected Samples",
+                "current_action": "Current Action",
+                "status": "Status",
+                "no_action_selected": "Not Selected",
+                "ready": "Ready",
+                "collecting": "Collecting...",
+                
+                // 动作选择
+                "select_rehab_action": "Select Rehabilitation Action",
+                "shoulder_flexion": "Shoulder Flexion",
+                "shoulder_abduction": "Shoulder Abduction",
+                "elbow_flexion": "Elbow Flexion",
+                "wrist_flexion": "Wrist Flexion",
+                "arm_rotation": "Arm Rotation",
+                
+                // 姿态数据预览
+                "pose_data_preview": "Pose Data Preview",
+                "waiting_data_collection": "Waiting for data collection...",
+                
+                // 消息提示
+                "camera_started": "Camera started",
+                "camera_stopped": "Camera stopped",
+                "select_action_first": "Please select an action first",
+                "turn_on_camera_first": "Please turn on camera first",
+                "collecting_action": "Collecting: {action}",
+                "collection_stopped": "Collection stopped, collected {count} samples",
+                "collection_stopped_tip": "Collection stopped (data saved in local buffer, click send data to upload)",
+                "no_data_to_send": "No data to send",
+                "successfully_collected": "Successfully collected {target} {action} samples!",
+                "successfully_uploaded": "Successfully uploaded {count} samples, redirecting...",
+                "upload_failed": "Sample upload failed, rolled back to local cache",
+                "selected_action": "Selected: {action}",
+                
+                // 错误消息
+                "mediapipe_init_failed": "MediaPipe initialization failed, please refresh the page and try again",
+                "video_element_not_found": "Video or canvas element not found",
+                "camera_permission_denied": "Camera permission denied, please allow camera access",
+                "no_camera_device": "No camera device found",
+                "camera_not_supported": "Browser does not support camera function",
+                "camera_constraints_error": "Cannot meet camera parameter requirements",
+                "cannot_start_camera": "Cannot start camera",
+                "system_error": "System error occurred, please check console"
+            }
+        };
+
+        // 当前语言
+        let currentLanguage = localStorage.getItem('languagePreference') || 'zh-CN';
+
+        // 翻译函数
+        function t(key, params = {}) {
+            let translation = translations[currentLanguage][key] || key;
+            
+            // 替换参数
+            for (const [param, value] of Object.entries(params)) {
+                translation = translation.replace(`{${param}}`, value);
+            }
+            
+            return translation;
+        }
+
+        // 应用翻译
+        function applyTranslations() {
+            // 翻译所有带有 data-i18n 属性的元素
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+                
+                if (element.tagName === 'INPUT' && element.type === 'text') {
+                    element.placeholder = translation;
+                } else if (element.tagName === 'INPUT' && element.type === 'submit') {
+                    element.value = translation;
+                } else {
+                    element.textContent = translation;
+                }
+            });
+
+            // 翻译所有带有 data-i18n-title 属性的元素
+            const titleElements = document.querySelectorAll('[data-i18n-title]');
+            titleElements.forEach(element => {
+                const key = element.getAttribute('data-i18n-title');
+                element.title = t(key);
+            });
+
+            // 更新动态内容
+            updateDynamicContent();
+        }
+
+        // 更新动态内容
+        function updateDynamicContent() {
+            // 更新当前动作显示
+            if (currentAction) {
+                const currentActionElement = document.getElementById('currentAction');
+                if (currentActionElement) {
+                    currentActionElement.textContent = getActionName(currentAction);
+                }
+            }
+            
+            // 更新状态显示
+            const statusElement = document.getElementById('collectionStatus');
+            if (statusElement) {
+                if (isCollecting) {
+                    statusElement.textContent = t('collecting');
+                } else {
+                    statusElement.textContent = t('ready');
+                }
+            }
+        }
+      
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en-US' ? 'zh-CN' : 'en-US';
+            localStorage.setItem('languagePreference', currentLanguage);
+           // updateLanguage();
+           location.reload();
+        }
+        // 初始化语言
+        function initLanguage() {
+            const savedLanguage = localStorage.getItem('languagePreference');
+            const browserLanguage = navigator.language || navigator.userLanguage;
+             const langText = document.getElementById('lang-text');
+         
+            if (langText) langText.textContent = translations[currentLanguage].langText;
+           /* if (savedLanguage) {
+                currentLanguage = savedLanguage;
+            } else if (browserLanguage.startsWith('zh-CN')) {
+                currentLanguage = 'zh';
+            } else {
+                currentLanguage = 'en';
+            }*/
+
+            // 设置语言选择器
+          /*  const languageSelector = document.getElementById('languageSelector');
+            if (languageSelector) {
+                languageSelector.value = currentLanguage;
+                languageSelector.addEventListener('change', (e) => {
+                    currentLanguage = e.target.value;
+                    localStorage.setItem('preferred_language', currentLanguage);
+                    applyTranslations();
+                });
+            }*/
+
+            applyTranslations();
+        }
+
+        // 全局变量声明
+        let videoElement = null;
+        let canvasElement = null;
+        let pose = null;
+        let camera = null;
+        let isCollecting = false;
+        let collectedSamples = 0;
+        const targetSamples = 100;
+        let currentAction = '';
+        let poseDataBuffer = [];
+
+        // 动作名称映射
+        const actionNames = {
+            'shoulder_flexion': 'shoulder_flexion',
+            'shoulder_abduction': 'shoulder_abduction',
+            'elbow_flexion': 'elbow_flexion',
+            'wrist_flexion': 'wrist_flexion',
+            'arm_rotation': 'arm_rotation'
+        };
+
+        // ========== MediaPipe Pose 数据采集功能 ========== 
+        async function initPose() {
+            try {
+                pose = new Pose({
+                    locateFile: (file) => `../libs/mediapipe/${file}`
+                });
+                pose.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    smoothSegmentation: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5,
+                    selfieMode: true
+                });
+                pose.onResults(onPoseResults);
+                console.log('MediaPipe Pose初始化成功');
+            } catch (error) {
+                console.error('MediaPipe Pose初始化失败:', error);
+                showTemporaryMessage(t('mediapipe_init_failed'), 'error');
+            }
+        }
+
+        function onPoseResults(results) {
+            const canvasElement = document.getElementById('output_canvas');
+            if (!canvasElement) return;
+            const canvasCtx = canvasElement.getContext('2d');
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            if (results.image && canvasElement.width && canvasElement.height) {
+                canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            }
+            if (results.poseLandmarks) {
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+                    color: '#00FF00',
+                    lineWidth: 4
+                });
+                drawLandmarks(canvasCtx, results.poseLandmarks, {
+                    color: '#FF0000',
+                    lineWidth: 2,
+                    radius: 4
+                });
+                if (isCollecting && currentAction) {
+                    processPoseData(results.poseLandmarks);
+                }
+                updatePoseDataPreview(results.poseLandmarks);
+            }
+            canvasCtx.restore();
+        }
+
+        function processPoseData(landmarks) {
+            if (!landmarks) return;
+            const upperLimbLandmarks = extractUpperLimbLandmarks(landmarks);
+            poseDataBuffer.push({
+                timestamp: Date.now(),
+                action: currentAction,
+                landmarks: upperLimbLandmarks
+            });
+            collectedSamples++;
+            updateSamplesCounter();
+            if (collectedSamples >= targetSamples) {
+                stopCollection();
+                showTemporaryMessage(t('successfully_collected', { 
+                    target: targetSamples, 
+                    action: t(actionNames[currentAction]) 
+                }), 'success');
+            }
+        }
+
+        function extractUpperLimbLandmarks(landmarks) {
+            const POSE_LANDMARKS = {
+                LEFT_SHOULDER: 11,
+                RIGHT_SHOULDER: 12,
+                LEFT_ELBOW: 13,
+                RIGHT_ELBOW: 14,
+                LEFT_WRIST: 15,
+                RIGHT_WRIST: 16,
+                LEFT_HIP: 23,
+                RIGHT_HIP: 24
+            };
+            const result = {};
+            for (const [key, index] of Object.entries(POSE_LANDMARKS)) {
+                const lm = landmarks[index];
+                if (lm) {
+                    result[key.toLowerCase()] = {
+                        x: lm.x,
+                        y: lm.y,
+                        z: lm.z,
+                        visibility: lm.visibility
+                    };
+                }
+            }
+            return result;
+        }
+
+        async function sendPoseDataToServer() {
+            if (!poseDataBuffer || poseDataBuffer.length === 0) {
+                showTemporaryMessage(t('no_data_to_send'), 'error');
+                return;
+            }
+            const sendDataBtn = document.getElementById('sendDataBtn');
+            const sendDataText = document.getElementById('sendDataText');
+            const sendDataLoader = document.getElementById('sendDataLoader');
+            if (sendDataBtn) sendDataBtn.disabled = true;
+            if (sendDataText) sendDataText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + t('sending');
+            if (sendDataLoader) sendDataLoader.classList.remove('hidden');
+            const samplesToSend = poseDataBuffer.splice(0, poseDataBuffer.length);
+            try {
+                const saveRes = await fetch(API_BASE_URL+'/save_pose_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: currentAction, samples: samplesToSend })
+                });
+                if (!saveRes.ok) {
+                    throw new Error(`保存失败: ${saveRes.status}`);
+                }
+                const result = await saveRes.json();
+                showTemporaryMessage(t('successfully_uploaded', { count: samplesToSend.length }), 'success');
+                
+                window.location.href = 'tranTSF.html';
+                
+            } catch (err) {
+                console.error('发送样本时出错:', err);
+                poseDataBuffer.unshift(...samplesToSend);
+                showTemporaryMessage(t('upload_failed'), 'error');
+            } finally {
+                if (sendDataBtn) sendDataBtn.disabled = false;
+                if (sendDataText) sendDataText.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>' + t('send_data');
+                if (sendDataLoader) sendDataLoader.classList.add('hidden');
+            }
+        }
+
+        function updateSamplesCounter() {
+            const collectedElement = document.getElementById('collectedSamples');
+            const targetElement = document.getElementById('targetSamples');
+            const currentActionElement = document.getElementById('currentAction');
+            const statusElement = document.getElementById('collectionStatus');
+            if (collectedElement) collectedElement.textContent = collectedSamples;
+            if (targetElement) targetElement.textContent = targetSamples;
+            if (currentActionElement) {
+                currentActionElement.textContent = currentAction ? getActionName(currentAction) : t('no_action_selected');
+            }
+            if (statusElement) {
+                statusElement.textContent = isCollecting ? t('collecting') : t('ready');
+            }
+        }
+
+        function getActionName(action) {
+            return t(actionNames[action]) || t('no_action_selected');
+        }
+
+        function updatePoseDataPreview(landmarks) {
+            if (!landmarks) return;
+            const upperLimb = extractUpperLimbLandmarks(landmarks);
+            const preview = document.getElementById('poseData');
+            if (!preview) return;
+            let html = '<div class="grid grid-cols-2 md:grid-cols-4 gap-2">';
+            for (const [key, landmark] of Object.entries(upperLimb)) {
+                if (landmark) {
+                    html += `
+                        <div class="bg-white/5 p-2 rounded text-xs">
+                            <strong>${key}:</strong><br>
+                            x: ${landmark.x.toFixed(3)}<br>
+                            y: ${landmark.y.toFixed(3)}<br>
+                            z: ${landmark.z.toFixed(3)}<br>
+                            visibility: ${landmark.visibility.toFixed(3)}
+                        </div>
+                    `;
+                }
+            }
+            html += '</div>';
+            preview.innerHTML = html;
+        }
+
+        // ========== 摄像头控制逻辑（MediaPipe Camera 方案） ========== 
+        async function startCamera() {
+            try {
+                videoElement = document.getElementById('webcam');
+                canvasElement = document.getElementById('output_canvas');
+                if (!videoElement || !canvasElement) {
+                    showTemporaryMessage(t('video_element_not_found'), 'error');
+                    return;
+                }
+                await initPose();
+                // 监听视频元数据，自动同步 canvas 尺寸
+                videoElement.addEventListener('loadedmetadata', function() {
+                    canvasElement.width = videoElement.videoWidth;
+                    canvasElement.height = videoElement.videoHeight;
+                    videoElement.style.display = 'block';
+                    canvasElement.style.display = 'block';
+                    const ph = document.getElementById('videoPlaceholder');
+                    if (ph) ph.style.display = 'none';
+                });
+                // 创建 MediaPipe Camera
+                camera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        if (pose) {
+                            await pose.send({ image: videoElement });
+                        }
+                    },
+                    width: 640,
+                    height: 480
+                });
+                await camera.start();
+                // UI 状态
+                const cameraBtn = document.getElementById('cameraToggle');
+                const collectionBtn = document.getElementById('collectionToggle');
+                if (cameraBtn) {
+                    cameraBtn.innerHTML = '<i class="fas fa-camera-slash mr-2"></i>' + t('turn_off_camera');
+                    cameraBtn.classList.remove('btn-primary');
+                    cameraBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                }
+                if (collectionBtn) collectionBtn.disabled = false;
+                updateStatus(t('camera_started'), 'success');
+                console.log('摄像头启动成功');
+            } catch (error) {
+                console.error('摄像头启动错误:', error);
+                let errorMsg = t('cannot_start_camera');
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = t('camera_permission_denied');
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = t('no_camera_device');
+                } else if (error.name === 'NotSupportedError') {
+                    errorMsg = t('camera_not_supported');
+                } else if (error.name === 'OverconstrainedError') {
+                    errorMsg = t('camera_constraints_error');
+                }
+                showTemporaryMessage(errorMsg, 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (camera) {
+                camera.stop();
+                camera = null;
+            }
+            if (isCollecting) {
+                stopCollection();
+            }
+            // UI 状态
+            const cameraBtn = document.getElementById('cameraToggle');
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (cameraBtn) {
+                cameraBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>' + t('turn_on_camera');
+                cameraBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                cameraBtn.classList.add('btn-primary');
+            }
+            if (collectionBtn) collectionBtn.disabled = true;
+            // 显示占位符
+            const ph = document.getElementById('videoPlaceholder');
+            if (ph) ph.style.display = 'block';
+            if (videoElement) videoElement.style.display = 'none';
+            if (canvasElement) canvasElement.style.display = 'none';
+            updateStatus(t('camera_stopped'), '');
+        }
+
+        async function toggleCamera() {
+            try {
+                if (camera) {
+                    stopCamera();
+                } else {
+                    await startCamera();
+                }
+            } catch (e) {
+                console.error('切换摄像头时出错', e);
+            }
+        }
+
+        function toggleCollection() {
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (isCollecting) {
+                stopCollection();
+                if (collectionBtn) {
+                    collectionBtn.innerHTML = '<i class="fas fa-record-vinyl mr-2"></i>' + t('start_collection');
+                    collectionBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    collectionBtn.classList.add('bg-white/10', 'hover:bg-white/20');
+                }
+            } else {
+                startCollection();
+                if (collectionBtn) {
+                    collectionBtn.innerHTML = '<i class="fas fa-stop mr-2"></i>' + t('stop_collection');
+                    collectionBtn.classList.remove('bg-white/10', 'hover:bg-white/20');
+                    collectionBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                }
+            }
+        }
+
+        function startCollection() {
+            if (!currentAction) {
+                showTemporaryMessage(t('select_action_first'), 'error');
+                return;
+            }
+            if (!pose || !camera) {
+                showTemporaryMessage(t('turn_on_camera_first'), 'error');
+                return;
+            }
+            isCollecting = true;
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (collectionBtn) collectionBtn.textContent = t('stop_collection');
+            updateStatus(t('collecting_action', { action: t(actionNames[currentAction]) }), 'info');
+            updateSamplesCounter();
+        }
+
+        function stopCollection() {
+            isCollecting = false;
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (collectionBtn) collectionBtn.textContent = t('start_collection');
+            updateStatus(t('collection_stopped', { count: collectedSamples }), 'info');
+            showTemporaryMessage(t('collection_stopped_tip'), 'info');
+        }
+
+        function setAction(action, btn) {
+            currentAction = action;
+            const currentActionElement = document.getElementById('currentAction');
+            if (currentActionElement) {
+                currentActionElement.textContent = getActionName(currentAction);
+            }
+            document.querySelectorAll('.grid button').forEach(btn => {
+                btn.classList.remove('bg-accent');
+                btn.classList.add('bg-white/10');
+            });
+            if (btn && btn.classList) {
+                btn.classList.remove('bg-white/10');
+                btn.classList.add('bg-accent');
+            }
+            if (!isCollecting) {
+                updateStatus(t('selected_action', { action: t(actionNames[action]) }), 'info');
+            }
+        }
+
+        function updateStatus(message, type) {
+            const statusElement = document.getElementById('collectionStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = type;
+            }
+        }
+
+        function showTemporaryMessage(message, type = 'info') {
+            const existingMessages = document.querySelectorAll('.temp-message');
+            existingMessages.forEach(msg => msg.remove());
+            const messageElement = document.createElement('div');
+            messageElement.className = `temp-message ${type}`;
+            messageElement.textContent = message;
+            document.body.appendChild(messageElement);
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 3000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            videoElement = document.getElementById('webcam');
+            canvasElement = document.getElementById('output_canvas');
+            setAction('shoulder_flexion', document.getElementById('shoulderFlexionBtn'));
+           
+            initLanguage();
+        });
+
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            showTemporaryMessage(t('system_error'), 'error');
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise拒绝:', e.reason);
+            showTemporaryMessage(t('system_error'), 'error');
+        });
+    </script>
+</body>
+</html>
