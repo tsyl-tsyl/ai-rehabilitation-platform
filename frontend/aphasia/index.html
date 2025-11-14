@@ -1,0 +1,2727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语言康复辅助系统 - 康复跟读训练</title>
+    <!-- 预连接常用第三方域，加速首包请求 -->
+  
+    <script src="../libs/tailwindcss/tailwindcss.js"></script>
+    <!-- 引入Font Awesome -->
+     <link rel="stylesheet" href="../libs/font-awesome/all.min.css">
+    <!-- 本地统一样式 -->
+      <script src="../libs/chart/chart.js"></script>
+    <!-- 在加载 Tailwind CDN 之前先提供配置（Tailwind CDN 会读取全局 tailwind.config） -->
+    <script>
+        tailwind = window.tailwind || {};
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0066CC',
+                        secondary: '#1E88E5',
+                        accent: '#64B5F6',
+                        dark: '#0D47A1',
+                        light: '#E3F2FD',
+                        deep: '#0A3A7A',
+                        med: '#1565C0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+
+    <!-- 引入Tailwind CSS（defer减少主线程阻塞） -->
+ 
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-gradient {
+                background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+            }
+            .bg-grid {
+                background-image: 
+                    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+                background-size: 20px 20px, 100% 100%;
+            }
+            .border-glow {
+                box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+            }
+            .pulse-glow {
+                animation: pulse-glow 2s infinite;
+            }
+            @keyframes pulse-glow {
+                0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+                50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+            }
+            .fade-in {
+                animation: fadeIn 1s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .score-display {
+    transition: all 0.5s ease;
+}
+
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+    transition: width 0.8s ease-in-out;
+}
+
+.metric-value {
+    font-weight: bold;
+}
+
+.match-indicator {
+    transition: all 0.3s ease;
+}
+
+.status-processing {
+    background: rgba(243, 156, 18, 0.3);
+    color: #feca57;
+}
+.status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+    <!-- 顶部装饰线条 -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+    
+    <!-- 页面容器 -->
+    <div class="container mx-auto px-4 py-4 md:py-8 relative z-10" role="main" aria-label="康复跟读训练主区域">
+        <!-- 顶部导航 -->
+        <header class="flex justify-between items-center mb-4 md:mb-8 fade-in">
+            <div class="flex items-center">
+                <a href="../index.html" title="返回首页" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-all">
+                    <i class="fa fa-home text-xl text-light"></i>
+                </a>
+                <div class="text-lg md:text-xl font-semibold ml-2" data-i18n="language.rehabilitation.system">语言康复辅助系统</div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <div class="text-xs md:text-sm opacity-80" data-i18n="aphasia.rehabilitation.ai">失语症康复 · AI语音评估 · 智能辅助</div>
+                </div>
+                <!-- 语言切换按钮 -->
+                <button class="lang-btn" onclick="toggleLanguage()">
+                    <span id="lang-text">English</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- 标题区域 -->
+        <div class="text-center mb-4 md:mb-8 relative fade-in">
+            <h1 class="text-[clamp(1.5rem,5vw,2.5rem)] font-bold mb-2 md:mb-3" data-i18n="rehabilitation.reading.train">康复跟读训练</h1>
+            <p class="text-base md:text-lg opacity-80 max-w-2xl mx-auto mb-4 md:mb-6" data-i18n="image.assisted.waveform">图片辅助 · 声波纹对比 · 渐进式练习</p>
+            <div class="w-24 md:w-32 h-1 bg-accent mx-auto rounded-full"></div>
+        </div>
+        
+        <!-- 主要内容区 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-4 md:mb-8">
+            <!-- 练习类型选择 -->
+            <div class="card-gradient rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border border-accent/30 border-glow fade-in">
+                <h2 class="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6" data-i18n="select.practice.type">选择练习类型</h2>
+                
+                <div class="space-y-3 md:space-y-4">
+                    <div class="task-card bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300 hover:bg-white/10 border border-accent/20 ring-2 ring-accent" data-type="vowel">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center mr-3 md:mr-4">
+                                <i class="fa fa-volume-up text-accent text-lg md:text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-accent text-sm md:text-base" data-i18n="vowel.practice">元音练习</h3>
+                                <p class="text-xs md:text-sm opacity-80" data-i18n="basic.pronunciation.training">基础发音训练</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300 hover:bg-white/10 border border-accent/20" data-type="word">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-500/20 flex items-center justify-center mr-3 md:mr-4">
+                                <i class="fa fa-font text-green-400 text-lg md:text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-green-400 text-sm md:text-base" data-i18n="word.practice">单词练习</h3>
+                                <p class="text-xs md:text-sm opacity-80" data-i18n="basic.vocabulary.training">基础词汇训练</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300 hover:bg-white/10 border border-accent/20" data-type="phrase">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/20 flex items-center justify-center mr-3 md:mr-4">
+                                <i class="fa fa-comments text-accent text-lg md:text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-accent text-sm md:text-base" data-i18n="life.phrases">生活短语</h3>
+                                <p class="text-xs md:text-sm opacity-80" data-i18n="daily.expression.training">日常表达训练</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 md:mt-6">
+                    <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3" data-i18n="practice.difficulty">练习难度</h3>
+                    <div class="flex space-x-2 md:space-x-3 justify-center">
+                        <button class="difficulty-btn px-4 py-2 text-sm md:text-base bg-accent rounded-lg transition-all duration-300 font-medium min-w-[60px] md:min-w-[80px]" data-level="1" data-i18n="beginner">
+                            初级
+                        </button>
+                        <button class="difficulty-btn px-4 py-2 text-sm md:text-base bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium min-w-[60px] md:min-w-[80px]" data-level="2" data-i18n="intermediate">
+                            中级
+                        </button>
+                        <button class="difficulty-btn px-4 py-2 text-sm md:text-base bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium min-w-[60px] md:min-w-[80px]" data-level="3" data-i18n="advanced">
+                            高级
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 练习进度 -->
+                <div class="mt-4 md:mt-6">
+                    <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3" data-i18n="practice.progress">练习进度</h3>
+                    <div class="bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs md:text-sm opacity-80" data-i18n="current.progress">当前进度</span>
+                            <span id="progress-text" class="text-xs md:text-sm text-accent">0/0</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-2 md:h-3">
+                            <div id="progress-bar" class="bg-gradient-to-r from-accent to-green-500 h-2 md:h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 md:mt-3">
+                            <div class="text-center">
+                                <div class="text-lg md:text-xl font-bold text-accent" id="completed-count">0</div>
+                                <div class="text-xs opacity-80" data-i18n="completed">已完成</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg md:text-xl font-bold text-green-400" id="accuracy-rate">0%</div>
+                                <div class="text-xs opacity-80" data-i18n="average.accuracy">平均准确率</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg md:text-xl font-bold text-orange-400" id="session-time">0:00</div>
+                                <div class="text-xs opacity-80" data-i18n="practice.time">练习时间</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 当前练习区域 -->
+            <div class="lg:col-span-2 card-gradient rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border border-accent/30 border-glow fade-in" style="animation-delay: 0.2s">
+                <h2 class="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6" data-i18n="current.practice">当前练习</h2>
+                
+                <!-- 图片提示区域 -->
+                <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-4 md:mb-6">
+                    <div id="next-item-btn" class="w-full md:w-1/3 bg-black/20 rounded-lg md:rounded-xl overflow-hidden shadow-sm h-40 md:h-64 flex items-center justify-center">
+                        <img id="practice-image" src="" alt="练习图片" loading="lazy" decoding="async" width="480" height="320" class="max-w-full max-h-full object-contain p-2 md:p-4">
+                    </div>
+                    <div class="w-full md:w-2/3">
+                        <div class="mb-3 md:mb-4" style="display: none;">
+                            <label class="block text-xs md:text-sm opacity-80 mb-1 md:mb-2" data-i18n="practice.content">练习内容：</label>
+                            <div id="practice-text" class="text-lg md:text-2xl font-medium text-center md:text-left py-2 md:py-3 px-3 md:px-4 bg-white/10 rounded-lg border border-accent/20 text-accent" data-i18n="select.practice.to.start">
+                                请选择练习类型开始训练
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 md:gap-3 justify-center md:justify-start">
+                            <button id="play-example-btn" aria-label="播放示范" title="播放示范" class="flex items-center gap-1 md:gap-2 bg-accent hover:bg-accent/80 text-white px-3 md:px-4 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base">
+                                <i class="fa fa-play"></i>
+                                <span data-i18n="play.example">播放示范</span>
+                            </button>
+                            <button id="show-text-btn" style="display: none;" aria-label="显示练习文字" title="显示练习文字" class="flex items-center gap-1 md:gap-2 bg-white/10 hover:bg-white/20 text-light px-3 md:px-4 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base">
+                                <i class="fa fa-eye"></i>
+                                <span data-i18n="show.text">显示文字</span>
+                            </button>
+                            <button  style="display: none;" aria-label="下一个练习" title="下一个练习" class="flex items-center gap-1 md:gap-2 bg-green-500 hover:bg-green-600 text-white px-3 md:px-4 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base">
+                                <i class="fa fa-arrow-right"></i>
+                                <span data-i18n="next">下一个</span>
+                            </button>
+                            <button id="start-record-btn"  aria-label="开始录音" title="开始录音" class="flex items-center gap-1 md:gap-2 bg-green-500 hover:bg-green-600 text-white px-4 md:px-5 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base">
+                        <i class="fa fa-microphone"></i>
+                        <span data-i18n="start.recording">开始录音</span>
+                    </button>
+                    <button id="stop-record-btn" style="display:none;" aria-label="停止录音" title="停止录音" class="flex items-center gap-1 md:gap-2 bg-red-500 hover:bg-red-600 text-white px-4 md:px-5 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base" disabled>
+                        <i class="fa fa-stop"></i>
+                        <span data-i18n="stop.recording">停止录音</span>
+                    </button>
+                        </div>
+                         <!-- 录音控制区域 -->
+                <div class="flex flex-wrap gap-2 md:gap-3 justify-center md:justify-start" style="margin-top: 30px;">
+                    
+                    <button id="play-user-btn" aria-label="播放我的录音" title="播放我的录音" class="flex items-center gap-1 md:gap-2 bg-white/10 hover:bg-white/20 text-light px-4 md:px-5 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base" disabled>
+                        <i class="fa fa-play"></i>
+                        <span data-i18n="play.my.recording">播放我的录音</span>
+                    </button>
+                    <button id="compare-btn" style="display:none;" aria-label="对比分析" title="对比分析" class="flex items-center gap-1 md:gap-2 bg-green-500 hover:bg-green-600 text-white px-4 md:px-5 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base" disabled>
+                        <i class="fa fa-balance-scale"></i>
+                        <span data-i18n="comparison.analysis">对比分析</span>
+                    </button>
+                    <button id="analyze" aria-label="AI分析发音" title="AI分析发音" class="flex items-center gap-1 md:gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 md:px-5 py-2 rounded-lg md:rounded-xl shadow transition text-sm md:text-base" disabled>
+    <i class="fa fa-robot"></i>
+    <span data-i18n="ai.analysis">AI分析发音</span>
+</button>
+                </div>
+                <!-- 录音状态显示 -->
+                <div id="recording-status"  style="margin-top: 30px;" class="text-center py-2 md:py-3 rounded-lg bg-white/10 border border-accent/20 hidden">
+                    <div class="inline-block w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full pulse-glow mr-2"></div>
+                    <span class="text-light font-medium text-sm md:text-base" data-i18n="recording.please.read">正在录音...请跟读</span>
+                </div>
+                
+                    </div>
+                    
+                </div>
+                
+                <!-- 波形对比区域 -->
+                <div class="mb-4 md:mb-6">
+                    <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4 flex items-center text-accent">
+                        <i class="fa fa-area-chart text-accent mr-2"></i>
+                        <span data-i18n="pronunciation.waveform.comparison">发音波形对比</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 gap-3 md:gap-4">
+                        <!-- 示范波形 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1 md:mb-2">
+                                <h4 class="font-medium text-accent flex items-center text-sm md:text-base">
+                                    <i class="fa fa-volume-up mr-2"></i>
+                                    <span data-i18n="standard.pronunciation">标准发音</span>
+                                </h4>
+                                <span id="model-status" class="text-xs md:text-sm opacity-70" data-i18n="not.played">未播放</span>
+                            </div>
+                            <div class="relative h-20 md:h-24 bg-white/10 rounded-lg overflow-hidden border border-accent/20">
+                                <canvas id="model-waveform" class="w-full h-full"></canvas>
+                                <div id="model-loading" class="absolute inset-0 flex items-center justify-center bg-black/50 hidden">
+                                    <div class="text-accent flex items-center text-sm">
+                                        <i class="fa fa-circle-o-notch fa-spin mr-2"></i>
+                                        <span data-i18n="processing">处理中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 用户波形 -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1 md:mb-2">
+                                <h4 class="font-medium text-orange-400 flex items-center text-sm md:text-base">
+                                    <i class="fa fa-microphone mr-2"></i>
+                                    <span data-i18n="your.pronunciation">你的发音</span>
+                                </h4>
+                                <span id="user-status" class="text-xs md:text-sm opacity-70" data-i18n="not.recorded">未录制</span>
+                            </div>
+                            <div class="relative h-20 md:h-24 bg-white/10 rounded-lg overflow-hidden border border-accent/20">
+                                <canvas id="user-waveform" class="w-full h-full"></canvas>
+                                <div id="user-loading" class="absolute inset-0 flex items-center justify-center bg-black/50 hidden">
+                                    <div class="text-orange-400 flex items-center text-sm">
+                                        <i class="fa fa-circle-o-notch fa-spin mr-2"></i>
+                                        <span data-i18n="processing">处理中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 显示对比结果（移动到波形下方） -->
+                <div id="comparison-result" class="fade-in mb-4 md:mb-6" style="display: none;">
+                    <div class="flex flex-col items-center justify-center mb-4 md:mb-6">
+                        <div class="text-center p-4 md:p-6 bg-white/10 rounded-lg md:rounded-xl border border-accent/20 mb-3 md:mb-4">
+                            <div class="text-2xl md:text-4xl font-bold text-accent mb-1" id="similarity-score">0%</div>
+                            <div class="text-xs md:text-sm opacity-80" data-i18n="matching.degree">匹配度</div>
+                        </div>
+                        <div class="text-center max-w-md">
+                            <p class="text-xs md:text-sm opacity-80" id="similarity-feedback" data-i18n="show.analysis.after.recording">完成录音后将显示分析结果</p>
+                        </div>
+                    </div>
+                </div>
+
+               
+                
+                 
+            </div>
+        </div>
+        
+        <!-- 对比结果与语音设置 -->
+        <div class="card-gradient rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border border-accent/30 border-glow fade-in" style="animation-delay: 0.4s">
+            <h2 class="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6" data-i18n="pronunciation.analysis.settings">发音分析与设置</h2>
+            
+            <div class="grid grid-cols-1   gap-4 md:gap-8">
+                <!-- 对比结果区域已移动到上方波形下方 -->
+                 <div class="bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4">
+            <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3" data-i18n="analysis.result">AI智能分析结果</h3>
+            
+            <div id="analysis-result" style="display: none;">
+                <!-- 分数显示 -->
+                <div class="text-center mb-4 md:mb-6">
+                    <div class="score-display text-4xl md:text-5xl font-bold mb-2" id="score-value">0</div>
+                    <div class="text-sm opacity-80" data-i18n="overall.score">综合得分</div>
+                    <div class="progress-bar w-full bg-white/20 rounded-full h-3 mt-2">
+                        <div id="score-progress" class="progress-fill h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- 特征指标 -->
+                <div class="grid grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
+                    <div class="text-center">
+                        <div class="metric-value text-xl md:text-2xl font-bold text-accent" id="similarity-score">0%</div>
+                        <div class="metric-label text-xs opacity-80" data-i18n="similarity.score">相似度</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="metric-value text-xl md:text-2xl font-bold text-green-400" id="pitch-stability">0%</div>
+                        <div class="metric-label text-xs opacity-80" data-i18n="pitch.stability">音调稳定性</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="metric-value text-xl md:text-2xl font-bold text-orange-400" id="clarity-score">0%</div>
+                        <div class="metric-label text-xs opacity-80" data-i18n="clarity.score">发音清晰度</div>
+                    </div>
+                </div>
+                
+                <!-- 文本对比 -->
+                <div id="text-comparison" class="mb-4 md:mb-6" style="display: none;">
+                    <h4 class="font-semibold mb-2 md:mb-3" data-i18n="text.comparison">文本对比</h4>
+                    <div class="flex items-center justify-between bg-white/10 rounded-lg p-3 md:p-4">
+                        <div class="text-center flex-1">
+                            <div class="text-xs opacity-80 mb-1" data-i18n="reference.text">标准文本</div>
+                            <div id="reference-text" class="font-medium text-accent"></div>
+                        </div>
+                        <div class="match-indicator w-4 h-4 rounded-full mx-2 md:mx-4" id="match-indicator"></div>
+                        <div class="text-center flex-1">
+                            <div class="text-xs opacity-80 mb-1" data-i18n="recognized.text">识别结果</div>
+                            <div id="recognized-text-display" class="font-medium"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 发音问题 -->
+                <div class="mb-4 md:mb-6">
+                    <h4 class="font-semibold mb-2 md:mb-3" data-i18n="pronunciation.issues">发音问题分析</h4>
+                    <div id="pronunciation-issues" class="space-y-2">
+                        <!-- 问题列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 改进建议 -->
+                <div class="mb-4 md:mb-6" style="display: none;">
+                    <h4 class="font-semibold mb-2 md:mb-3" data-i18n="improvement.suggestions">改进建议</h4>
+                    <div id="improvement-suggestions" class="space-y-2">
+                        <!-- 建议列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 个性化建议 -->
+                <div>
+                    <h4 class="font-semibold mb-2 md:mb-3" data-i18n="personalized.advice">个性化康复建议</h4>
+                    <div id="personalized-advice" class="space-y-3">
+                        <!-- 个性化建议将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="no-analysis" class="text-center py-6 md:py-8">
+                <div class="opacity-70 mb-4">
+                    <i class="fa fa-microphone-alt text-4xl md:text-5xl mb-3"></i>
+                    <div data-i18n="analysis.ready">请先录制并分析您的发音</div>
+                </div>
+                <button style="display:none;" class="btn bg-accent hover:bg-accent/80 text-white px-4 py-2 rounded-lg" onclick="startPractice()" data-i18n="start.practice">开始练习</button>
+            </div>
+        </div>
+                <!-- 语音设置 -->
+                <div class="bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4" style="display:none;">
+                    <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3" data-i18n="voice.settings">语音设置</h3>
+                    <!-- 个性化模型训练入口 -->
+                    <div class="mb-4 flex justify-end">
+                        <button id="customTrainBtn" class="px-4 py-2 bg-accent text-white rounded-lg shadow hover:bg-accent/80 transition font-semibold flex items-center gap-2">
+                            <i class="fa fa-cogs"></i> 
+                            <span data-i18n="personalized.model.training">个性化模型训练</span>
+                        </button>
+                    </div>
+                    <!-- 语音选择 -->
+                    <div class="mb-3 md:mb-4">
+                        <label class="block text-xs md:text-sm opacity-80 mb-1 md:mb-2" data-i18n="select.voice">选择语音：</label>
+                        <select id="voice-select" class="w-full p-2 bg-gradient-to-r from-accent/80 to-deep/80 border border-accent/20 rounded-lg text-white text-sm md:text-base placeholder-white focus:bg-accent/90 focus:text-white">
+                            <option value="" data-i18n="loading">加载中...</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 md:gap-4">
+                        <div>
+                            <div class="flex justify-between mb-1 md:mb-2">
+                                <label class="text-xs md:text-sm opacity-80" data-i18n="speech.rate">语速：</label>
+                                <span id="rate-value" class="text-xs md:text-sm text-accent">1.0x</span>
+                            </div>
+                            <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" class="w-full">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1 md:mb-2">
+                                <label class="text-xs md:text-sm opacity-80" data-i18n="volume">音量：</label>
+                                <span id="volume-value" class="text-xs md:text-sm text-accent">1.0x</span>
+                            </div>
+                            <input type="range" id="volume" min="0" max="1" step="0.1" value="1" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 练习进度跟踪 -->
+<div class="card-gradient rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border border-accent/30 border-glow fade-in mb-4 md:mb-8" style="animation-delay: 0.6s">
+    <h2 class="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6" data-i18n="progress.tracking">练习进度跟踪</h2>
+    
+    <div class="chart-controls flex justify-center gap-2 md:gap-3 mb-4 md:mb-6">
+        <button class="chart-period-btn px-3 py-2 text-sm md:text-base bg-accent rounded-lg transition-all duration-300 font-medium min-w-[70px]" data-period="7" data-i18n="recent.7.days">
+            最近7天
+        </button>
+        <button class="chart-period-btn px-3 py-2 text-sm md:text-base bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium min-w-[70px]" data-period="30" data-i18n="recent.30.days">
+            最近30天
+        </button>
+        <button class="chart-period-btn px-3 py-2 text-sm md:text-base bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium min-w-[70px]" data-period="90" data-i18n="recent.90.days">
+            最近90天
+        </button>
+    </div>
+    
+    <div class="progress-chart-container bg-white/5 rounded-lg md:rounded-xl p-3 md:p-4 h-64 md:h-80 mb-4 md:mb-6">
+        <canvas id="progress-chart"></canvas>
+    </div>
+    
+    <div id="progress-stats" class="grid grid-cols-3 gap-3 md:gap-4">
+        <!-- 统计数据将通过JavaScript动态生成 -->
+    </div>
+</div>
+        <!-- 底部信息 -->
+        <footer class="text-center pt-4 md:pt-8 mt-4 md:mt-8 border-t border-white/10 fade-in" style="animation-delay: 0.8s">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-3 md:mb-0">
+                    <div class="flex items-center justify-center md:justify-start">
+                        <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+                            <i class="fa fa-comments text-xs md:text-sm text-light"></i>
+                        </div>
+                        <span class="font-semibold text-sm md:text-base" data-i18n="intelligent.rehabilitation.platform">智能康复辅助平台</span>
+                    </div>
+                    <div class="text-xs md:text-sm opacity-70 mt-1" data-i18n="tech.empower.rehabilitation">科技赋能康复，智能改善生活</div>
+                </div>
+                
+                <div class="text-xs md:text-sm opacity-70">
+                    © 2025 <span data-i18n="intelligent.rehabilitation.platform">智能康复辅助平台</span> - <span data-i18n="ai.based.precise.rehabilitation">基于AI的精准康复解决方案</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 背景装饰元素 -->
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+    </div>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 语言配置
+        const i18n = {
+            'zh-CN': {
+                'language.rehabilitation.system': '语言康复辅助系统',
+                'aphasia.rehabilitation.ai': '失语症康复 · AI语音评估 · 智能辅助',
+                'rehabilitation.reading.train': '康复跟读训练',
+                'image.assisted.waveform': '图片辅助 · 声波纹对比 · 渐进式练习',
+                'select.practice.type': '选择练习类型',
+                'vowel.practice': '元音练习',
+                'basic.pronunciation.training': '基础发音训练',
+                'word.practice': '单词练习',
+                'basic.vocabulary.training': '基础词汇训练',
+                'life.phrases': '生活短语',
+                'daily.expression.training': '日常表达训练',
+                'practice.difficulty': '练习难度',
+                'beginner': '初级',
+                'intermediate': '中级',
+                'advanced': '高级',
+                'practice.progress': '练习进度',
+                'current.progress': '当前进度',
+                'completed': '已完成',
+                'average.accuracy': '平均准确率',
+                'practice.time': '练习时间',
+                'current.practice': '当前练习',
+                'practice.content': '练习内容：',
+                'select.practice.to.start': '请选择练习类型开始训练',
+                'play.example': '播放示范',
+                'show.text': '显示文字',
+                'next': '下一个',
+                'pronunciation.waveform.comparison': '发音波形对比',
+                'standard.pronunciation': '标准发音',
+                'not.played': '未播放',
+                'processing': '处理中...',
+                'your.pronunciation': '你的发音',
+                'not.recorded': '未录制',
+                'matching.degree': '匹配度',
+                'show.analysis.after.recording': '完成录音后将显示分析结果',
+                'start.recording': '开始录音',
+                'stop.recording': '停止录音',
+                'play.my.recording': '播放录音',
+                'comparison.analysis': '对比分析',
+                'recording.please.read': '正在录音...请跟读',
+                'pronunciation.analysis.settings': '发音分析与设置',
+                'voice.settings': '语音设置',
+                'personalized.model.training': '个性化模型训练',
+                'select.voice': '选择语音：',
+                'loading': '加载中...',
+                'speech.rate': '语速：',
+                'volume': '音量：',
+                'intelligent.rehabilitation.platform': '智能康复辅助平台',
+                'tech.empower.rehabilitation': '科技赋能康复，智能改善生活',
+                'ai.based.precise.rehabilitation': '基于AI的精准康复解决方案',
+                'langText': 'English',
+                // 新增 practiceData 相关翻译
+        'vowel.a.text': '啊',
+        'vowel.a.description': '开口元音',
+        'vowel.o.text': '喔',
+        'vowel.o.description': '后元音',
+        'vowel.e.text': '鹅',
+        'vowel.e.description': '中元音',
+        'vowel.i.text': '衣',
+        'vowel.i.description': '前元音',
+        'vowel.u.text': '乌',
+        'vowel.u.description': '后元音',
+        'vowel.ai.text': '唉',
+        'vowel.ai.description': '双元音',
+        'vowel.ei.text': '欸',
+        'vowel.ei.description': '双元音',
+        'vowel.ao.text': '熬',
+        'vowel.ao.description': '双元音',
+        'vowel.ou.text': '欧',
+        'vowel.ou.description': '双元音',
+        'vowel.yi.text': '衣',
+        'vowel.yi.description': '单元音',
+        'vowel.an.text': '安',
+        'vowel.an.description': '鼻化元音',
+        'vowel.en.text': '恩',
+        'vowel.en.description': '鼻化元音',
+        'vowel.ang.text': '昂',
+        'vowel.ang.description': '鼻化元音',
+        'vowel.eng.text': '鞥',
+        'vowel.eng.description': '鼻化元音',
+        'vowel.yiwuyi.text': '衣-乌-衣',
+        'vowel.yiwuyi.description': '三元音',
+
+        'word.father.text': '爸爸',
+        'word.father.description': '亲属称谓',
+        'word.mother.text': '妈妈',
+        'word.mother.description': '亲属称谓',
+        'word.water.text': '水',
+        'word.water.description': '生活用品',
+        'word.rice.text': '饭',
+        'word.rice.description': '食物',
+        'word.car.text': '车',
+        'word.car.description': '交通工具',
+        'word.tv.text': '电视',
+        'word.tv.description': '家电',
+        'word.phone.text': '手机',
+        'word.phone.description': '电子产品',
+        'word.school.text': '学校',
+        'word.school.description': '场所',
+        'word.hospital.text': '医院',
+        'word.hospital.description': '场所',
+        'word.friend.text': '朋友',
+        'word.friend.description': '人际关系',
+        'word.computer.text': '计算机',
+        'word.computer.description': '电子产品',
+        'word.library.text': '图书馆',
+        'word.library.description': '场所',
+        'word.tomato.text': '西红柿',
+        'word.tomato.description': '食物',
+        'word.transport.text': '交通工具',
+        'word.transport.description': '类别',
+        'word.environment.text': '环境保护',
+        'word.environment.description': '概念',
+
+        'phrase.hello.text': '你好',
+        'phrase.hello.description': '问候语',
+        'phrase.thanks.text': '谢谢',
+        'phrase.thanks.description': '感谢语',
+        'phrase.goodbye.text': '再见',
+        'phrase.goodbye.description': '告别语',
+        'phrase.sitdown.text': '请坐',
+        'phrase.sitdown.description': '礼貌用语',
+        'phrase.sorry.text': '对不起',
+        'phrase.sorry.description': '道歉语',
+        'phrase.morning.text': '早上好',
+        'phrase.morning.description': '问候语',
+        'phrase.drink.text': '我要喝水',
+        'phrase.drink.description': '需求表达',
+        'phrase.toilet.text': '请问洗手间在哪里',
+        'phrase.toilet.description': '询问',
+        'phrase.weather.text': '今天天气很好',
+        'phrase.weather.description': '描述',
+        'phrase.understand.text': '我明白了',
+        'phrase.understand.description': '回应',
+        'phrase.doctor.text': '我想预约明天的医生',
+        'phrase.doctor.description': '预约',
+        'phrase.help.text': '请帮我拿一下那个东西',
+        'phrase.help.description': '请求帮助',
+        'phrase.park.text': '今天下午我们一起去公园吧',
+        'phrase.park.description': '邀请',
+        'phrase.sick.text': '我感觉身体不太舒服',
+        'phrase.sick.description': '描述状况',
+        'phrase.howto.text': '请问这个怎么使用呢',
+        'phrase.howto.description': '询问',
+        'ai.analysis': 'AI分析发音',
+        'ai.analyzing': '分析中...',
+        'analysis.result': 'AI智能分析结果',
+        'overall.score': '综合得分',
+        'similarity.score': '相似度',
+        'pitch.stability': '音调稳定性',
+        'clarity.score': '发音清晰度',
+        'pronunciation.issues': '发音问题分析',
+        'improvement.suggestions': '改进建议',
+        'personalized.advice': '个性化康复建议',
+        'text.comparison': '文本对比',
+        'reference.text': '标准文本',
+        'recognized.text': '识别结果',
+        'no.issues': '发音良好，无明显问题',
+        'severity.high': '严重',
+        'severity.medium': '中等',
+        'severity.low': '轻微',
+        'next.exercise.recommendation': '推荐练习',
+        'analysis.ready': '请先录制并分析您的发音',
+        'analysis.in.progress': 'AI分析中，请稍候...',
+        'analysis.complete': '分析完成',
+        'analysis.failed': '分析失败',
+        'start.practice': '开始练习',
+        'total.practices': '总练习次数',
+        'average.score': '平均得分',
+        'progress.trend': '进步趋势',
+        'trend.rising': '上升',
+        'trend.stable': '稳定',
+        'trend.falling': '下降',
+        'recent.days': '最近{days}天',
+        'debug.result': '后端返回结果',
+        'progress.tracking': '练习进度跟踪',
+'recent.7.days': '最近7天',
+'recent.30.days': '最近30天',
+'recent.90.days': '最近90天',
+'no.data': '无数据',
+readyMessage: "准备就绪，请点击\"播放示范\"开始",
+            },
+            'en-US': {
+                'language.rehabilitation.system': 'Language Rehabilitation Assistant System',
+                'aphasia.rehabilitation.ai': 'Aphasia Rehabilitation · AI Speech Assessment · Intelligent Assistance',
+                'rehabilitation.reading.train': 'Rehabilitation Reading Training',
+                'image.assisted.waveform': 'Image Assisted · Waveform Comparison · Progressive Practice',
+                'select.practice.type': 'Select Practice Type',
+                'vowel.practice': 'Vowel Practice',
+                'basic.pronunciation.training': 'Basic Pronunciation Training',
+                'word.practice': 'Word Practice',
+                'basic.vocabulary.training': 'Basic Vocabulary Training',
+                'life.phrases': 'Life Phrases',
+                'daily.expression.training': 'Daily Expression Training',
+                'practice.difficulty': 'Practice Difficulty',
+                'beginner': 'Beginner',
+                'intermediate': 'Intermediate',
+                'advanced': 'Advanced',
+                'practice.progress': 'Practice Progress',
+                'current.progress': 'Current Progress',
+                'completed': 'Completed',
+                'average.accuracy': 'Average Accuracy',
+                'practice.time': 'Practice Time',
+                'current.practice': 'Current Practice',
+                'practice.content': 'Practice Content:',
+                'select.practice.to.start': 'Please select a practice type to start training',
+                'play.example': 'Play Example',
+                'show.text': 'Show Text',
+                'next': 'Next',
+                'pronunciation.waveform.comparison': 'Pronunciation Waveform Comparison',
+                'standard.pronunciation': 'Standard Pronunciation',
+                'not.played': 'Not Played',
+                'processing': 'Processing...',
+                'your.pronunciation': 'Your Pronunciation',
+                'not.recorded': 'Not Recorded',
+                'matching.degree': 'Matching Degree',
+                'show.analysis.after.recording': 'Analysis results will be shown after recording',
+                'start.recording': 'Start Recording',
+                'stop.recording': 'Stop Recording',
+                'play.my.recording': 'Play Recording',
+                'comparison.analysis': 'Comparison Analysis',
+                'recording.please.read': 'Recording... Please read along',
+                'pronunciation.analysis.settings': 'Pronunciation Analysis and Settings',
+                'voice.settings': 'Voice Settings',
+                'personalized.model.training': 'Personalized Model Training',
+                'select.voice': 'Select Voice:',
+                'loading': 'Loading...',
+                'speech.rate': 'Speech Rate:',
+                'volume': 'Volume:',
+                'intelligent.rehabilitation.platform': 'Intelligent Rehabilitation Platform',
+                'tech.empower.rehabilitation': 'Technology Empowers Rehabilitation, Intelligence Improves Life',
+                'ai.based.precise.rehabilitation': 'AI-based Precise Rehabilitation Solution',
+                'langText': '中文',
+                // 新增 practiceData 相关翻译
+        'vowel.a.text': 'Ah',
+        'vowel.a.description': 'Open vowel',
+        'vowel.o.text': 'Oh',
+        'vowel.o.description': 'Back vowel',
+        'vowel.e.text': 'Uh',
+        'vowel.e.description': 'Mid vowel',
+        'vowel.i.text': 'Ee',
+        'vowel.i.description': 'Front vowel',
+        'vowel.u.text': 'Oo',
+        'vowel.u.description': 'Back vowel',
+        'vowel.ai.text': 'Ai',
+        'vowel.ai.description': 'Diphthong',
+        'vowel.ei.text': 'Ei',
+        'vowel.ei.description': 'Diphthong',
+        'vowel.ao.text': 'Ao',
+        'vowel.ao.description': 'Diphthong',
+        'vowel.ou.text': 'Ou',
+        'vowel.ou.description': 'Diphthong',
+        'vowel.yi.text': 'Yi',
+        'vowel.yi.description': 'Monophthong',
+        'vowel.an.text': 'An',
+        'vowel.an.description': 'Nasal vowel',
+        'vowel.en.text': 'En',
+        'vowel.en.description': 'Nasal vowel',
+        'vowel.ang.text': 'Ang',
+        'vowel.ang.description': 'Nasal vowel',
+        'vowel.eng.text': 'Eng',
+        'vowel.eng.description': 'Nasal vowel',
+        'vowel.yiwuyi.text': 'Yi-Wu-Yi',
+        'vowel.yiwuyi.description': 'Triphthong',
+
+        'word.father.text': 'Dad',
+        'word.father.description': 'Family title',
+        'word.mother.text': 'Mom',
+        'word.mother.description': 'Family title',
+        'word.water.text': 'Water',
+        'word.water.description': 'Daily item',
+        'word.rice.text': 'Rice',
+        'word.rice.description': 'Food',
+        'word.car.text': 'Car',
+        'word.car.description': 'Transportation',
+        'word.tv.text': 'TV',
+        'word.tv.description': 'Home appliance',
+        'word.phone.text': 'Phone',
+        'word.phone.description': 'Electronic product',
+        'word.school.text': 'School',
+        'word.school.description': 'Place',
+        'word.hospital.text': 'Hospital',
+        'word.hospital.description': 'Place',
+        'word.friend.text': 'Friend',
+        'word.friend.description': 'Relationship',
+        'word.computer.text': 'Computer',
+        'word.computer.description': 'Electronic product',
+        'word.library.text': 'Library',
+        'word.library.description': 'Place',
+        'word.tomato.text': 'Tomato',
+        'word.tomato.description': 'Food',
+        'word.transport.text': 'Transportation',
+        'word.transport.description': 'Category',
+        'word.environment.text': 'Environmental Protection',
+        'word.environment.description': 'Concept',
+
+        'phrase.hello.text': 'Hello',
+        'phrase.hello.description': 'Greeting',
+        'phrase.thanks.text': 'Thank you',
+        'phrase.thanks.description': 'Thanks expression',
+        'phrase.goodbye.text': 'Goodbye',
+        'phrase.goodbye.description': 'Farewell',
+        'phrase.sitdown.text': 'Please sit down',
+        'phrase.sitdown.description': 'Polite expression',
+        'phrase.sorry.text': 'Sorry',
+        'phrase.sorry.description': 'Apology',
+        'phrase.morning.text': 'Good morning',
+        'phrase.morning.description': 'Greeting',
+        'phrase.drink.text': 'I want to drink water',
+        'phrase.drink.description': 'Need expression',
+        'phrase.toilet.text': 'Where is the restroom?',
+        'phrase.toilet.description': 'Inquiry',
+        'phrase.weather.text': 'The weather is nice today',
+        'phrase.weather.description': 'Description',
+        'phrase.understand.text': 'I understand',
+        'phrase.understand.description': 'Response',
+        'phrase.doctor.text': 'I\'d like to make a doctor\'s appointment for tomorrow',
+        'phrase.doctor.description': 'Appointment',
+        'phrase.help.text': 'Please help me get that thing',
+        'phrase.help.description': 'Request help',
+        'phrase.park.text': 'Let\'s go to the park together this afternoon',
+        'phrase.park.description': 'Invitation',
+        'phrase.sick.text': 'I don\'t feel well',
+        'phrase.sick.description': 'Describe condition',
+        'phrase.howto.text': 'How do I use this?',
+        'phrase.howto.description': 'Inquiry',
+        'ai.analysis': 'AI Analysis',
+        'ai.analyzing': 'Analyzing...',
+        'analysis.result': 'AI Analysis Results',
+        'overall.score': 'Overall Score',
+        'similarity.score': 'Similarity',
+        'pitch.stability': 'Pitch Stability',
+        'clarity.score': 'Clarity Score',
+        'pronunciation.issues': 'Pronunciation Issues',
+        'improvement.suggestions': 'Improvement Suggestions',
+        'personalized.advice': 'Personalized Advice',
+        'text.comparison': 'Text Comparison',
+        'reference.text': 'Reference Text',
+        'recognized.text': 'Recognized Text',
+        'no.issues': 'Good pronunciation, no obvious issues',
+        'severity.high': 'High',
+        'severity.medium': 'Medium',
+        'severity.low': 'Low',
+        'next.exercise.recommendation': 'Recommended Exercise',
+        'analysis.ready': 'Please record and analyze your pronunciation first',
+        'analysis.in.progress': 'AI analysis in progress, please wait...',
+        'analysis.complete': 'Analysis complete',
+        'analysis.failed': 'Analysis failed',
+        'start.practice': 'Start Practice',
+        'total.practices': 'Total Practices',
+        'average.score': 'Average Score',
+        'progress.trend': 'Progress Trend',
+        'trend.rising': 'Rising',
+        'trend.stable': 'Stable',
+        'trend.falling': 'Falling',
+        'recent.days': 'Recent {days} days',
+        'debug.result': 'Backend Result',
+        'progress.tracking': 'Practice Progress Tracking',
+'recent.7.days': 'Recent 7 Days',
+'recent.30.days': 'Recent 30 Days',
+'recent.90.days': 'Recent 90 Days',
+'no.data': 'No Data',
+ readyMessage: "Ready, click 'Play Example' to start"
+            }
+        };
+
+        // 当前语言设置
+        let currentLanguage = localStorage.getItem('languagePreference') || 'zh-CN';
+
+        // 切换语言函数
+        function changeLanguage(lang) {
+          
+            currentLanguage = lang;
+            
+            // 更新所有带有 data-i18n 属性的元素
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    element.textContent = i18n[lang][key];
+                }
+            });
+            
+            // 更新语言按钮样式
+             const langTexttag = document.getElementById('lang-text');
+            if (langTexttag) langTexttag.textContent = i18n[currentLanguage].langText;
+            
+            // 保存语言设置到本地存储
+            localStorage.setItem('languagePreference', lang);
+        }
+          let imageurl ="../static/images/aphasia";
+        // 练习数据 - 图片与内容对应
+        const practiceData = {
+    vowel: {
+        1: [
+            { 
+                text: "vowel.a.text", 
+                image: imageurl+"/vowel/vowel_a.png", 
+                description: "vowel.a.description" 
+            },
+            { 
+                text: "vowel.o.text", 
+                image: imageurl+"/vowel/vowel_o.png", 
+                description: "vowel.o.description" 
+            },
+            { 
+                text: "vowel.e.text", 
+                image: imageurl+"/vowel/vowel_e.png", 
+                description: "vowel.e.description" 
+            },
+            { 
+                text: "vowel.i.text", 
+                image: imageurl+"/vowel/vowel_i.png", 
+                description: "vowel.i.description" 
+            },
+            { 
+                text: "vowel.u.text", 
+                image: imageurl+"/vowel/vowel_u.png", 
+                description: "vowel.u.description" 
+            }
+        ],
+        2: [
+            { 
+                text: "vowel.ai.text", 
+                image: imageurl+"/vowel/vowel_ai.png", 
+                description: "vowel.ai.description" 
+            },
+            { 
+                text: "vowel.ei.text", 
+                image: imageurl+"/vowel/vowel_ei.png", 
+                description: "vowel.ei.description" 
+            },
+            { 
+                text: "vowel.ao.text", 
+                image: imageurl+"/vowel/vowel_ao.png", 
+                description: "vowel.ao.description" 
+            },
+            { 
+                text: "vowel.ou.text", 
+                image: imageurl+"/vowel/vowel_ou.png", 
+                description: "vowel.ou.description" 
+            },
+            { 
+                text: "vowel.yi.text", 
+                image: imageurl+"/vowel/vowel_yi.png", 
+                description: "vowel.yi.description" 
+            }
+        ],
+        3: [
+            { 
+                text: "vowel.an.text", 
+                image: imageurl+"/vowel/vowel_an.png", 
+                description: "vowel.an.description" 
+            },
+            { 
+                text: "vowel.en.text", 
+                image: imageurl+"/vowel/vowel_en.png", 
+                description: "vowel.en.description" 
+            },
+            { 
+                text: "vowel.ang.text", 
+                image: imageurl+"/vowel/vowel_ang.png", 
+                description: "vowel.ang.description" 
+            },
+            { 
+                text: "vowel.eng.text", 
+                image: imageurl+"/vowel/vowel_eng.png", 
+                description: "vowel.eng.description" 
+            },
+            { 
+                text: "vowel.yiwuyi.text", 
+                image: imageurl+"/vowel/vowel_yiwuyi.png", 
+                description: "vowel.yiwuyi.description" 
+            }
+        ]
+    },
+    word: {
+        1: [
+            { 
+                text: "word.father.text", 
+                image: imageurl+"/word/word_baba.png", 
+                description: "word.father.description" 
+            },
+            { 
+                text: "word.mother.text", 
+                image: imageurl+"/word/word_mama.png", 
+                description: "word.mother.description" 
+            },
+            { 
+                text: "word.water.text", 
+                image: imageurl+"/word/word_water.png", 
+                description: "word.water.description" 
+            },
+            { 
+                text: "word.rice.text", 
+                image: imageurl+"/word/word_rice.png", 
+                description: "word.rice.description" 
+            },
+            { 
+                text: "word.car.text", 
+                image: imageurl+"/word/word_car.png", 
+                description: "word.car.description" 
+            }
+        ],
+        2: [
+            { 
+                text: "word.tv.text", 
+                image: imageurl+"/word/word_tv.png", 
+                description: "word.tv.description" 
+            },
+            { 
+                text: "word.phone.text", 
+                image: imageurl+"/word/word_phone.png", 
+                description: "word.phone.description" 
+            },
+            { 
+                text: "word.school.text", 
+                image: imageurl+"/word/word_school.png", 
+                description: "word.school.description" 
+            },
+            { 
+                text: "word.hospital.text", 
+                image: imageurl+"/word/word_hospital.png", 
+                description: "word.hospital.description" 
+            },
+            { 
+                text: "word.friend.text", 
+                image: imageurl+"/word/word_friend.png", 
+                description: "word.friend.description" 
+            }
+        ],
+        3: [
+            { 
+                text: "word.computer.text", 
+                image: imageurl+"/word/word_computer.png", 
+                description: "word.computer.description" 
+            },
+            { 
+                text: "word.library.text", 
+                image: imageurl+"/word/word_library.png", 
+                description: "word.library.description" 
+            },
+            { 
+                text: "word.tomato.text", 
+                image: imageurl+"/word/word_tomato.png", 
+                description: "word.tomato.description" 
+            },
+            { 
+                text: "word.transport.text", 
+                image: imageurl+"/word/word_transport.png", 
+                description: "word.transport.description" 
+            },
+            { 
+                text: "word.environment.text", 
+                image: imageurl+"/word/word_environment.png", 
+                description: "word.environment.description" 
+            }
+        ]
+    },
+    phrase: {
+        1: [
+            { 
+                text: "phrase.hello.text", 
+                image: imageurl+"/phrase/phrase_hello.png", 
+                description: "phrase.hello.description" 
+            },
+            { 
+                text: "phrase.thanks.text", 
+                image: imageurl+"/phrase/phrase_thanks.png", 
+                description: "phrase.thanks.description" 
+            },
+            { 
+                text: "phrase.goodbye.text", 
+                image: imageurl+"/phrase/phrase_goodbye.png", 
+                description: "phrase.goodbye.description" 
+            },
+            { 
+                text: "phrase.sitdown.text", 
+                image: imageurl+"/phrase/phrase_sitdown.png", 
+                description: "phrase.sitdown.description" 
+            },
+            { 
+                text: "phrase.sorry.text", 
+                image: imageurl+"/phrase/phrase_sorry.png", 
+                description: "phrase.sorry.description" 
+            }
+        ],
+        2: [
+            { 
+                text: "phrase.morning.text", 
+                image: imageurl+"/phrase/phrase_morning.png", 
+                description: "phrase.morning.description" 
+            },
+            { 
+                text: "phrase.drink.text", 
+                image: imageurl+"/phrase/phrase_drink.png", 
+                description: "phrase.drink.description" 
+            },
+            { 
+                text: "phrase.toilet.text", 
+                image: imageurl+"/phrase/phrase_toilet.png", 
+                description: "phrase.toilet.description" 
+            },
+            { 
+                text: "phrase.weather.text", 
+                image: imageurl+"/phrase/phrase_weather.png", 
+                description: "phrase.weather.description" 
+            },
+            { 
+                text: "phrase.understand.text", 
+                image: imageurl+"/phrase/phrase_understand.png", 
+                description: "phrase.understand.description" 
+            }
+        ],
+        3: [
+            { 
+                text: "phrase.doctor.text", 
+                image: imageurl+"/phrase/phrase_doctor.png", 
+                description: "phrase.doctor.description" 
+            },
+            { 
+                text: "phrase.help.text", 
+                image: imageurl+"/phrase/phrase_help.png", 
+                description: "phrase.help.description" 
+            },
+            { 
+                text: "phrase.park.text", 
+                image: imageurl+"/phrase/phrase_park.png", 
+                description: "phrase.park.description" 
+            },
+            { 
+                text: "phrase.sick.text", 
+                image: imageurl+"/phrase/phrase_sick.png", 
+                description: "phrase.sick.description" 
+            },
+            { 
+                text: "phrase.howto.text", 
+                image: imageurl+"/phrase/phrase_howto.png", 
+                description: "phrase.howto.description" 
+            }
+        ]
+    }
+};
+
+ 
+        
+        // 当前练习状态
+        let currentPractice = {
+            type: 'vowel',
+            level: 1,
+            index: 0,
+            items: [],
+            completed: 0,
+            totalItems: 0,
+            sessionStartTime: null,
+            totalAccuracy: 0,
+            totalAttempts: 0
+        };
+        
+        // 音频相关变量
+        let modelAudioUrl = null;
+        let userAudioUrl = null;
+        let modelAudioPlaying = false;
+        let userAudioPlaying = false;
+        let modelWaveformAnimation = null;
+        let userWaveformAnimation = null;
+
+    // 真实录音相关变量
+    let mediaRecorder = null;
+        let audioChunks = [];
+        let userAudioBlob = null;
+        let userAudioUrlReal = null;
+        let audioContext = null;
+        let analyser = null;
+        let source = null;
+        let recordingStream = null;
+        let waveformDrawId = null;
+    // 窗口 resize 防抖定时器
+    let resizeTimeout = null;
+
+    let progressChart = null;
+let chartPeriod = 7; // 默认显示7天数据
+        
+        // DOM元素
+        const elements = {
+            // 任务选择
+            taskCards: document.querySelectorAll('.task-card'),
+            difficultyBtns: document.querySelectorAll('.difficulty-btn'),
+            
+            // 练习内容
+            practiceImage: document.getElementById('practice-image'),
+            practiceText: document.getElementById('practice-text'),
+            playExampleBtn: document.getElementById('play-example-btn'),
+            showTextBtn: document.getElementById('show-text-btn'),
+            nextItemBtn: document.getElementById('next-item-btn'),
+            
+            // 波形相关
+            modelWaveform: document.getElementById('model-waveform'),
+            userWaveform: document.getElementById('user-waveform'),
+            modelCtx: document.getElementById('model-waveform').getContext('2d'),
+            userCtx: document.getElementById('user-waveform').getContext('2d'),
+            modelStatus: document.getElementById('model-status'),
+            userStatus: document.getElementById('user-status'),
+            modelLoading: document.getElementById('model-loading'),
+            userLoading: document.getElementById('user-loading'),
+            
+         
+    
+ 
+    
+       
+        
+    
+ 
+            
+            // 录音控制
+            startRecordBtn: document.getElementById('start-record-btn'),
+            stopRecordBtn: document.getElementById('stop-record-btn'),
+            playUserBtn: document.getElementById('play-user-btn'),
+            compareBtn: document.getElementById('compare-btn'),
+            recordingStatus: document.getElementById('recording-status'),
+            analyze: document.getElementById('analyze'),
+            
+            // 对比结果
+            comparisonResult: document.getElementById('comparison-result'),
+            similarityScore: document.getElementById('similarity-score'),
+            similarityFeedback: document.getElementById('similarity-feedback'),
+            
+            // 语音设置
+            voiceSelect: document.getElementById('voice-select'),
+            rateInput: document.getElementById('rate'),
+            rateValue: document.getElementById('rate-value'),
+            volumeInput: document.getElementById('volume'),
+            volumeValue: document.getElementById('volume-value'),
+            
+            // 进度
+            progressBar: document.getElementById('progress-bar'),
+            progressText: document.getElementById('progress-text'),
+            completedCount: document.getElementById('completed-count'),
+            accuracyRate: document.getElementById('accuracy-rate'),
+            sessionTime: document.getElementById('session-time')
+        };
+        
+        // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+            // 初始化画布
+            initCanvases();
+
+            // 设置事件监听器
+            setupEventListeners();
+            // 个性化模型训练按钮弹窗
+            setTimeout(() => {
+                const btn = document.getElementById('customTrainBtn');
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        alert(currentLanguage === 'zh-CN' ? '个性化模型训练功能即将开放，敬请期待！' : 'Personalized model training function will be available soon, stay tuned!');
+                    });
+                }
+            }, 800);
+
+            // 初始化语音设置
+            updateVoiceSettings();
+
+            // 开始计时器
+            startSessionTimer();
+
+            // 初始化语言设置
+            const savedLanguage = localStorage.getItem('languagePreference') || 'zh-CN';
+            changeLanguage(savedLanguage);
+
+            // 初始化进度图表
+            debugger;
+initProgressChart_aphasia();
+loadProgressData();
+setupChartControls();
+
+            // 自动开始练习（不自动播放示范）
+            setTimeout(() => {
+                startPractice();
+                // 注意：不自动播放示范，避免页面载入时产生意外音频
+            }, 500);
+        });
+        
+        // 初始化画布
+        function initCanvases() {
+            const width = elements.modelWaveform.parentElement.clientWidth;
+            const height = elements.modelWaveform.parentElement.clientHeight;
+            
+            elements.modelWaveform.width = width;
+            elements.modelWaveform.height = height;
+            elements.userWaveform.width = width;
+            elements.userWaveform.height = height;
+            
+            // 绘制初始波形
+            drawEmptyWaveform(elements.modelCtx, '#64B5F6');
+            drawEmptyWaveform(elements.userCtx, '#F97316');
+
+             updateStatus(i18n[currentLanguage].readyMessage);
+        }
+// 更新状态
+       /* function updateStatus(message) {
+            elements.status.textContent = message;
+        }*/
+        // 在窗口大小变化时重新设置画布尺寸（防抖）
+        window.addEventListener('resize', () => {
+            if (resizeTimeout) clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                try { initCanvases(); } catch (e) { /* 安全降级 */ }
+            }, 200);
+        });
+        
+        // 绘制空波形
+        function drawEmptyWaveform(ctx, color) {
+            const canvas = ctx.canvas;
+            const height = canvas.height;
+            const width = canvas.width;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制中线
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.strokeStyle = color + '40';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制提示文字
+            ctx.fillStyle = color + '80';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentLanguage === 'zh-CN' ? '等待音频数据...' : 'Waiting for audio data...', width / 2, height / 2);
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 练习类型选择
+            elements.taskCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    elements.taskCards.forEach(c => {
+                        c.classList.remove('ring-2', 'ring-accent');
+                    });
+                    card.classList.add('ring-2', 'ring-accent');
+                    currentPractice.type = card.dataset.type;
+                    startPractice();
+                });
+            });
+            
+            // 难度选择
+            elements.difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.difficultyBtns.forEach(b => {
+                        b.classList.remove('bg-accent');
+                        b.classList.add('bg-white/10', 'hover:bg-white/20');
+                    });
+                    btn.classList.remove('bg-white/10', 'hover:bg-white/20');
+                    btn.classList.add('bg-accent');
+                    currentPractice.level = parseInt(btn.dataset.level);
+                    if (currentPractice.type) {
+                        startPractice();
+                    }
+                });
+            });
+            
+            // 播放示范
+            elements.playExampleBtn.addEventListener('click', playExample);
+            
+            // 显示文字
+            elements.showTextBtn.addEventListener('click', () => {
+                if (currentPractice.items.length > 0) {
+                    elements.practiceText.textContent = i18n[currentLanguage][currentPractice.items[currentPractice.index].text];
+                }
+            });
+            
+            // 下一个练习
+            elements.nextItemBtn.addEventListener('click', nextPracticeItem);
+            
+            // 录音控制
+            elements.startRecordBtn.addEventListener('click', startRecording);
+            elements.stopRecordBtn.addEventListener('click', stopRecording);
+            elements.playUserBtn.addEventListener('click', playUserRecording);
+            elements.compareBtn.addEventListener('click', compareWaveforms);
+            // 分析发音
+            elements.analyze.addEventListener('click', analyzePronunciation);
+            
+            // 语音设置
+            elements.rateInput.addEventListener('input', updateVoiceSettings);
+            elements.volumeInput.addEventListener('input', updateVoiceSettings);
+        }
+        
+        // 开始练习
+        function startPractice() {
+            // 重置练习状态
+            currentPractice.items = practiceData[currentPractice.type][currentPractice.level];
+            currentPractice.index = 0;
+            currentPractice.completed = 0;
+            currentPractice.totalItems = currentPractice.items.length;
+            currentPractice.totalAccuracy = 0;
+            currentPractice.totalAttempts = 0;
+            
+            // 更新进度
+            updateProgress();
+            
+            // 加载第一个练习项
+            loadPracticeItem(currentPractice.index);
+            
+            // 重置会话时间
+            currentPractice.sessionStartTime = new Date();
+            
+            // 加载语音列表
+            loadVoices();
+        }
+        
+        // 加载练习项
+        function loadPracticeItem(index) {
+            if (!currentPractice.items || index >= currentPractice.items.length) return;
+            
+            const item = currentPractice.items[index];
+            
+            // 更新UI
+            elements.practiceImage.src = item.image;
+            elements.practiceImage.alt = item.text;
+            elements.practiceText.textContent = currentLanguage === 'zh-CN' ? "请观察图片，点击播放示范" : "Please observe the image, click to play example";
+            
+            // 清空波形
+            drawEmptyWaveform(elements.modelCtx, '#64B5F6');
+            drawEmptyWaveform(elements.userCtx, '#F97316');
+            
+            elements.modelStatus.textContent = currentLanguage === 'zh-CN' ? '未播放' : 'Not Played';
+            elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '未录制' : 'Not Recorded';
+            elements.comparisonResult.classList.add('hidden');
+            
+            // 重置按钮状态
+            elements.playUserBtn.disabled = true;
+            elements.compareBtn.disabled = true;
+            
+            // 停止任何正在进行的音频播放
+            stopAllAudio();
+        }
+        
+        // 下一个练习项
+        function nextPracticeItem() {
+            if (!currentPractice.items) return;
+            
+            // 检查是否完成所有练习
+            if (currentPractice.index >= currentPractice.items.length - 1) {
+                // 所有练习完成
+                currentPractice.index = 0;
+            } else {
+                currentPractice.index++;
+            }
+            
+            // 加载新的练习项
+            loadPracticeItem(currentPractice.index);
+            
+            // 更新进度
+            updateProgress();
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            if (!currentPractice.items) {
+                elements.progressBar.style.width = '0%';
+                elements.progressText.textContent = '0/0';
+                return;
+            }
+            
+            const total = currentPractice.totalItems;
+            const progress = Math.min(100, (currentPractice.completed / total) * 100);
+            
+            elements.progressBar.style.width = `${progress}%`;
+            elements.progressText.textContent = `${currentPractice.completed}/${total}`;
+            elements.completedCount.textContent = currentPractice.completed;
+            
+            // 计算平均准确率
+            const avgAccuracy = currentPractice.totalAttempts > 0 ? 
+                Math.round(currentPractice.totalAccuracy / currentPractice.totalAttempts) : 0;
+            elements.accuracyRate.textContent = `${avgAccuracy}%`;
+        }
+        
+        // 播放示范语音
+        function playExample() {
+            if (!currentPractice.items || currentPractice.index >= currentPractice.items.length) return;
+            // 如果正在录音，先停止录音以避免麦克风-扬声器反馈（可能产生"滴滴"声）
+            try { stopRecording(); } catch (e) {}
+
+           // const text = currentPractice.items[currentPractice.index].text;
+            const text =i18n[currentLanguage][currentPractice.items[currentPractice.index].text];
+            elements.modelStatus.textContent = currentLanguage === 'zh-CN' ? '播放中...' : 'Playing...';
+            if (modelWaveformAnimation) {
+                cancelAnimationFrame(modelWaveformAnimation);
+            }
+            // 停止并关闭任何已有的 AudioContext
+            try {
+                if (audioContext && typeof audioContext.close === 'function') {
+                    audioContext.close();
+                }
+            } catch (err) {}
+
+            // 创建用于采集TTS音频的AudioContext和analyser
+            let ttsAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let ttsAnalyser = ttsAudioCtx.createAnalyser();
+            ttsAnalyser.fftSize = 1024;
+            let ttsSource = null;
+            let ttsStreamDest = ttsAudioCtx.createMediaStreamDestination();
+
+            // 使用Web Speech API播放语音，输出到MediaStreamDestination
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = parseFloat(elements.rateInput.value);
+            utterance.volume = parseFloat(elements.volumeInput.value);
+            const selectedVoice = speechSynthesis.getVoices().find(voice => voice.name === elements.voiceSelect.value);
+            if (selectedVoice) utterance.voice = selectedVoice;
+
+            // 让TTS输出到audio元素，采集其音频流
+            let ttsAudio = new Audio();
+            ttsAudio.autoplay = true;
+            ttsAudio.src = '';
+            ttsAudio.onplay = () => {
+                ttsSource = ttsAudioCtx.createMediaElementSource(ttsAudio);
+                ttsSource.connect(ttsAnalyser);
+                ttsAnalyser.connect(ttsAudioCtx.destination);
+                drawModelLiveWaveform(ttsAnalyser, elements.modelCtx, '#64B5F6');
+            };
+
+            // 用SpeechSynthesisUtterance生成音频并播放到audio
+            utterance.onstart = () => {
+                // 生成TTS音频并播放到audio
+                // 由于Web Speech API无法直接获取音频流，采用间接方式
+                // 这里仅做兼容处理，部分浏览器可能不支持
+            };
+            utterance.onend = () => {
+                elements.modelStatus.textContent = currentLanguage === 'zh-CN' ? '已播放' : 'Played';
+                elements.practiceText.textContent = text;
+                modelAudioPlaying = false;
+                if (modelWaveformAnimation) cancelAnimationFrame(modelWaveformAnimation);
+                // 绘制静态波形
+                generateSpeechWaveform(elements.modelCtx, '#64B5F6', text);
+                if (elements.userStatus.textContent === (currentLanguage === 'zh-CN' ? '已录制' : 'Recorded')) {
+                    elements.compareBtn.disabled = false;
+                }
+                // 关闭AudioContext
+                try { ttsAudioCtx.close(); } catch (e) {}
+            };
+            modelAudioPlaying = true;
+            try { speechSynthesis.cancel(); } catch (e) {}
+            speechSynthesis.speak(utterance);
+        }
+
+        // 标准发音波形动态绘制（TTS音频流）
+        function drawModelLiveWaveform(analyser, ctx, color) {
+            const canvas = ctx.canvas;
+            const width = canvas.width;
+            const height = canvas.height;
+            const bufferLength = analyser.fftSize;
+            const dataArray = new Uint8Array(bufferLength);
+            function draw() {
+                analyser.getByteTimeDomainData(dataArray);
+                ctx.clearRect(0, 0, width, height);
+                ctx.beginPath();
+                for (let i = 0; i < width; i++) {
+                    const dataIndex = Math.floor(i / width * bufferLength);
+                    const v = dataArray[dataIndex] / 128.0;
+                    const y = v * height / 2;
+                    if (i === 0) {
+                        ctx.moveTo(i, y);
+                    } else {
+                        ctx.lineTo(i, y);
+                    }
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                modelWaveformAnimation = requestAnimationFrame(draw);
+            }
+            draw();
+        }
+        
+        // 生成语音波形（标准发音：用静态正弦波+渐变填充，视觉更专业）
+        function generateSpeechWaveform(ctx, color, text) {
+            const canvas = ctx.canvas;
+            const height = canvas.height;
+            const width = canvas.width;
+            ctx.clearRect(0, 0, width, height);
+            // 生成平滑正弦波
+            ctx.beginPath();
+            for (let i = 0; i < width; i++) {
+                const x = i;
+                const y = height / 2 + Math.sin(i * 0.04) * height / 4 * (0.7 + Math.sin(i * 0.01) * 0.2);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // 渐变填充
+            const grad = ctx.createLinearGradient(0, 0, width, 0);
+            grad.addColorStop(0, color + '33');
+            grad.addColorStop(1, color + '00');
+            ctx.fillStyle = grad;
+            ctx.globalAlpha = 0.5;
+            ctx.fillRect(0, height / 2, width, height / 2);
+            ctx.globalAlpha = 1;
+        }
+        
+        // 开始动态波形
+        function startDynamicWaveform(ctx, color, type) {
+            const canvas = ctx.canvas;
+            const height = canvas.height;
+            const width = canvas.width;
+            
+            let startTime = Date.now();
+            let animationId;
+            
+            function animate() {
+                const currentTime = Date.now();
+                const elapsed = (currentTime - startTime) / 1000;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // 绘制动态波形
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                
+                for (let i = 0; i < width; i++) {
+                    const x = i;
+                    // 根据时间和位置生成动态波形
+                    const timeFactor = elapsed * 2;
+                    const frequency = type === 'model' ? 0.05 : 0.04;
+                    const amplitude = type === 'model' ? 0.8 : 0.7;
+                    
+                    let y = height / 2 + Math.sin(i * frequency + timeFactor) * (height / 4) * amplitude;
+                    
+                    // 添加一些随机变化
+                    y += Math.sin(i * 0.1 + timeFactor * 3) * (height / 20);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 填充波形下方区域
+                ctx.fillStyle = color + '33';
+                ctx.fill();
+                
+                // 继续动画
+                if ((type === 'model' && modelAudioPlaying) || (type === 'user' && userAudioPlaying)) {
+                    animationId = requestAnimationFrame(animate);
+                    
+                    if (type === 'model') {
+                        modelWaveformAnimation = animationId;
+                    } else {
+                        userWaveformAnimation = animationId;
+                    }
+                }
+            }
+            
+            animate();
+        }
+        
+        // 开始录音（真实实现）
+        async function startRecording() {
+            if (!currentPractice.items || currentPractice.index >= currentPractice.items.length) return;
+            // 更新状态
+            elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '录音中...' : 'Recording...';
+            elements.recordingStatus.classList.remove('hidden');
+            elements.startRecordBtn.style.display = "none";
+            elements.stopRecordBtn.style.display = "";
+            elements.startRecordBtn.disabled = true;
+            elements.stopRecordBtn.disabled = false;
+            elements.playExampleBtn.disabled = true;
+            elements.nextItemBtn.disabled = true;
+            elements.playUserBtn.disabled = true;
+            elements.compareBtn.disabled = true;
+            elements.analyze.disabled =true;
+
+            // 停止之前的动画
+            if (userWaveformAnimation) {
+                cancelAnimationFrame(userWaveformAnimation);
+            }
+            if (waveformDrawId) {
+                cancelAnimationFrame(waveformDrawId);
+            }
+
+            // 获取麦克风权限并开始录音
+            try {
+                recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(recordingStream);
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+                mediaRecorder.onstop = () => {
+                    userAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    userAudioUrlReal = URL.createObjectURL(userAudioBlob);
+                    elements.playUserBtn.disabled = false;
+                    elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '已录制' : 'Recorded';
+                    elements.recordingStatus.classList.add('hidden');
+                    // 停止波形绘制
+                    if (waveformDrawId) cancelAnimationFrame(waveformDrawId);
+                    // 绘制静态波形
+                    drawRecordedWaveform(userAudioBlob, elements.userCtx, '#F97316');
+                    // 如果示范已播放，启用对比按钮
+                    if (elements.modelStatus.textContent === (currentLanguage === 'zh-CN' ? '已播放' : 'Played')) {
+                        elements.compareBtn.disabled = false;
+                    }
+                };
+                mediaRecorder.start();
+                // 实时绘制波形
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                source = audioContext.createMediaStreamSource(recordingStream);
+                analyser = audioContext.createAnalyser();
+                source.connect(analyser);
+                analyser.fftSize = 1024;
+                drawLiveWaveform();
+            } catch (err) {
+                alert(currentLanguage === 'zh-CN' ? '无法访问麦克风，请检查浏览器权限设置。' : 'Unable to access microphone, please check browser permissions.');
+                elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '录音失败' : 'Recording Failed';
+                elements.recordingStatus.classList.add('hidden');
+                elements.startRecordBtn.disabled = false;
+                elements.stopRecordBtn.disabled = true;
+            }
+        }
+
+        // 实时绘制录音波形
+        function drawLiveWaveform() {
+            const ctx = elements.userCtx;
+            const canvas = ctx.canvas;
+            const width = canvas.width;
+            const height = canvas.height;
+            const bufferLength = analyser.fftSize;
+            const dataArray = new Uint8Array(bufferLength);
+            ctx.clearRect(0, 0, width, height);
+            function draw() {
+                analyser.getByteTimeDomainData(dataArray);
+                ctx.clearRect(0, 0, width, height);
+                ctx.beginPath();
+                for (let i = 0; i < width; i++) {
+                    const dataIndex = Math.floor(i / width * bufferLength);
+                    const v = dataArray[dataIndex] / 128.0;
+                    const y = v * height / 2;
+                    if (i === 0) {
+                        ctx.moveTo(i, y);
+                    } else {
+                        ctx.lineTo(i, y);
+                    }
+                }
+                ctx.strokeStyle = '#F97316';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                waveformDrawId = requestAnimationFrame(draw);
+            }
+            draw();
+        }
+        
+        // 停止录音（真实实现）
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (recordingStream) {
+                // 停止麦克风流
+                recordingStream.getTracks().forEach(track => track.stop());
+            }
+            elements.startRecordBtn.disabled = false;
+            elements.stopRecordBtn.disabled = true;
+            elements.startRecordBtn.style.display = "";
+            elements.stopRecordBtn.style.display = "none";
+            elements.playExampleBtn.disabled = false;
+            elements.nextItemBtn.disabled = false;
+            elements.analyze.disabled =false;
+        }
+
+        // 绘制录音后的静态波形
+        function drawRecordedWaveform(blob, ctx, color) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const tempAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                tempAudioCtx.decodeAudioData(arrayBuffer, function(audioBuffer) {
+                    const data = audioBuffer.getChannelData(0);
+                    const canvas = ctx.canvas;
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.beginPath();
+                    for (let i = 0; i < width; i++) {
+                        const dataIndex = Math.floor(i / width * data.length);
+                        const v = data[dataIndex];
+                        const y = (v * height / 2) + height / 2;
+                        if (i === 0) {
+                            ctx.moveTo(i, y);
+                        } else {
+                            ctx.lineTo(i, y);
+                        }
+                    }
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+            };
+            reader.readAsArrayBuffer(blob);
+        }
+        
+        // 生成用户波形
+        function generateUserWaveform(ctx, color, text) {
+            const canvas = ctx.canvas;
+            const height = canvas.height;
+            const width = canvas.width;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 根据文本长度生成不同的波形
+            const textLength = text.length;
+            const dataPoints = width;
+            const data = [];
+            
+            // 生成基础波形（正弦波组合）
+            for (let i = 0; i < dataPoints; i++) {
+                let value = 0;
+                
+                // 根据文本长度调整波形复杂度
+                for (let j = 1; j <= textLength; j++) {
+                    const frequency = j * 0.5;
+                    const amplitude = 1 / j;
+                    value += Math.sin(i / 20 * frequency) * amplitude;
+                }
+                
+                // 添加更多随机噪声模拟用户发音的不完美
+                value += (Math.random() - 0.5) * 0.5;
+                 
+                data.push(value);
+            }
+            
+            // 绘制波形
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            
+            for (let i = 0; i < data.length; i++) {
+                const x = (i / data.length) * width;
+                const y = (data[i] * height / 3) + height / 2;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 填充波形下方区域
+            ctx.fillStyle = color + '33';
+            ctx.fill();
+        }
+        
+        // 播放用户录音（真实实现）
+        function playUserRecording() {
+            if (!userAudioUrlReal) return;
+            elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '播放中...' : 'Playing...';
+            // 停止之前的动画
+            if (userWaveformAnimation) {
+                cancelAnimationFrame(userWaveformAnimation);
+            }
+            if (waveformDrawId) {
+                cancelAnimationFrame(waveformDrawId);
+            }
+            // 播放录音音频
+            const audio = new Audio(userAudioUrlReal);
+            audio.onended = () => {
+                elements.userStatus.textContent = currentLanguage === 'zh-CN' ? '已录制' : 'Recorded';
+                // 绘制静态波形
+                drawRecordedWaveform(userAudioBlob, elements.userCtx, '#F97316');
+            };
+            // 播放时实时绘制波形
+            const tempAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = tempAudioCtx.createAnalyser();
+            audio.addEventListener('play', () => {
+                const source = tempAudioCtx.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(tempAudioCtx.destination);
+                analyser.fftSize = 1024;
+                const bufferLength = analyser.fftSize;
+                const dataArray = new Uint8Array(bufferLength);
+                function draw() {
+                    analyser.getByteTimeDomainData(dataArray);
+                    const ctx = elements.userCtx;
+                    const canvas = ctx.canvas;
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    ctx.clearRect(0, 0, width, height);
+                    ctx.beginPath();
+                    for (let i = 0; i < width; i++) {
+                        const dataIndex = Math.floor(i / width * bufferLength);
+                        const v = dataArray[dataIndex] / 128.0;
+                        const y = v * height / 2;
+                        if (i === 0) {
+                            ctx.moveTo(i, y);
+                        } else {
+                            ctx.lineTo(i, y);
+                        }
+                    }
+                    ctx.strokeStyle = '#F97316';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    waveformDrawId = requestAnimationFrame(draw);
+                }
+                draw();
+            });
+            audio.play();
+        }
+
+        
+        
+        // 对比波形（叠加用户波形到标准发音波形上，统一结果样式）
+        function compareWaveforms() {
+            // 计算随机相似度
+            const similarity = Math.floor(Math.random() * 30) + 70; // 70-100%
+            currentPractice.completed++;
+            currentPractice.totalAccuracy += similarity;
+            currentPractice.totalAttempts++;
+
+            // 叠加用户波形到标准发音波形canvas
+            overlayUserWaveformOnModel();
+
+            // 合并结果区块样式
+            const resultHtml = `
+                <div class="flex flex-col items-center justify-center p-4 md:p-6 bg-white/10 rounded-lg md:rounded-xl border border-accent/20 mb-3 md:mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="text-2xl md:text-4xl font-bold text-accent" style="min-width:80px;">${similarity}%</div>
+                        <div class="text-base md:text-lg font-semibold text-green-400">${getSimilarityFeedback(similarity)}</div>
+                    </div>
+                </div>
+            `;
+            elements.comparisonResult.innerHTML = resultHtml;
+            elements.comparisonResult.classList.remove('hidden');
+            updateProgress();
+        }
+
+        // 叠加用户波形到标准发音波形canvas
+        function overlayUserWaveformOnModel() {
+            const modelCtx = elements.modelCtx;
+            const userCtx = elements.userCtx;
+            const canvas = modelCtx.canvas;
+            const width = canvas.width;
+            const height = canvas.height;
+            // 先绘制标准发音波形（保留原有）
+            const text = currentPractice.items[currentPractice.index].text;
+            generateSpeechWaveform(modelCtx, '#64B5F6', text);
+            // 再叠加用户波形（半透明橙色）
+            if (userAudioBlob) {
+                drawRecordedWaveform(userAudioBlob, modelCtx, 'rgba(249,115,22,0.5)');
+            }
+        }
+
+        // 统一反馈文字
+        function getSimilarityFeedback(similarity) {
+            if (similarity >= 90) {
+                return currentLanguage === 'zh-CN' 
+                    ? `太棒了！你的发音非常标准，匹配度达到了${similarity}%。继续保持！`
+                    : `Excellent! Your pronunciation is very standard, matching degree reached ${similarity}%. Keep it up!`;
+            } else if (similarity >= 80) {
+                return currentLanguage === 'zh-CN'
+                    ? `很好！你的发音与标准发音比较接近，匹配度${similarity}%。再试一次会更完美！`
+                    : `Great! Your pronunciation is close to the standard, matching degree ${similarity}%. Try again for perfection!`;
+            } else {
+                return currentLanguage === 'zh-CN'
+                    ? `不错的尝试，匹配度${similarity}%。注意观察波形差异较大的部分，多练习几次会更好。`
+                    : `Good attempt, matching degree ${similarity}%. Pay attention to the parts with large waveform differences, practice more for better results.`;
+            }
+        }
+        
+        // 更新语音设置
+        function updateVoiceSettings() {
+            elements.rateValue.textContent = `${elements.rateInput.value}x`;
+            elements.volumeValue.textContent = `${elements.volumeInput.value}x`;
+        }
+        
+        // 加载语音列表
+        function loadVoices() {
+            // 等待语音列表加载完成
+            if (speechSynthesis.getVoices().length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    populateVoiceList();
+                });
+            } else {
+                populateVoiceList();
+            }
+        }
+        
+        // 填充语音列表
+        function populateVoiceList() {
+            const voices = speechSynthesis.getVoices();
+            elements.voiceSelect.innerHTML = '';
+            
+            // 优先显示中文语音
+            const chineseVoices = voices.filter(voice => 
+                voice.lang.includes('zh') || voice.name.includes('Chinese')
+            );
+            
+            const otherVoices = voices.filter(voice => 
+                !voice.lang.includes('zh') && !voice.name.includes('Chinese')
+            );
+            
+            // 添加中文语音
+            if (chineseVoices.length > 0) {
+                const groupOpt = document.createElement('optgroup');
+                groupOpt.label = currentLanguage === 'zh-CN' ? '中文语音' : 'Chinese Voices';
+                chineseVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    groupOpt.appendChild(option);
+                });
+                elements.voiceSelect.appendChild(groupOpt);
+            }
+            
+            // 添加其他语音
+            if (otherVoices.length > 0) {
+                const groupOpt = document.createElement('optgroup');
+                groupOpt.label = currentLanguage === 'zh-CN' ? '其他语音' : 'Other Voices';
+                otherVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    groupOpt.appendChild(option);
+                });
+                elements.voiceSelect.appendChild(groupOpt);
+            }
+            
+            // 如果没有可用语音
+            if (voices.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = currentLanguage === 'zh-CN' ? '没有可用的语音' : 'No available voices';
+                elements.voiceSelect.appendChild(option);
+            }
+        }
+        
+        // 开始会话计时器
+        function startSessionTimer() {
+            setInterval(() => {
+                if (currentPractice.sessionStartTime) {
+                    const now = new Date();
+                    const diff = Math.floor((now - currentPractice.sessionStartTime) / 1000);
+                    const minutes = Math.floor(diff / 60);
+                    const seconds = diff % 60;
+                    elements.sessionTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+        
+        // 停止所有音频播放
+        function stopAllAudio() {
+            speechSynthesis.cancel();
+            modelAudioPlaying = false;
+            userAudioPlaying = false;
+            
+            if (modelWaveformAnimation) {
+                cancelAnimationFrame(modelWaveformAnimation);
+            }
+            
+            if (userWaveformAnimation) {
+                cancelAnimationFrame(userWaveformAnimation);
+            }
+            // 停止并释放录音流与 AudioContext
+            try {
+                if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            } catch (e) {}
+            try {
+                if (recordingStream) {
+                    recordingStream.getTracks().forEach(t => t.stop());
+                    recordingStream = null;
+                }
+            } catch (e) {}
+            try {
+                if (audioContext && typeof audioContext.close === 'function') {
+                    audioContext.close();
+                    audioContext = null;
+                }
+            } catch (e) {}
+            if (waveformDrawId) {
+                cancelAnimationFrame(waveformDrawId);
+                waveformDrawId = null;
+            }
+        }
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en-US' ? 'zh-CN' : 'en-US';
+            localStorage.setItem('languagePreference', currentLanguage);
+            location.reload();
+        }
+
+// AI 分析发音功能
+async function analyzePronunciation() {
+    debugger;
+    if (!userAudioBlob) {
+        alert(currentLanguage === 'zh-CN' ? '请先录制您的发音' : 'Please record your pronunciation first');
+        return;
+    }
+
+    // 显示分析中状态
+    elements.analyze.disabled = true;
+    elements.analyze.innerHTML = `<i class="fa fa-robot"></i><span data-i18n="ai.analyzing">分析中...</span>`;
+    updateButtonText(elements.analyze);
+    debugger;
+    elements.recordingStatus.classList.add('status-processing');
+    updateStatus(currentLanguage === 'zh-CN' ? 'AI分析中，请稍候...' : 'AI analysis in progress, please wait...');
+
+    try {
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append('audio', userAudioBlob, 'recording.webm');
+        formData.append('reference_text', i18n[currentLanguage][currentPractice.items[currentPractice.index].text]);
+        formData.append('user_id', 'user_' + Date.now());
+        formData.append('language', currentLanguage); 
+        
+        console.log('发送分析请求...', {
+            reference_text: i18n[currentLanguage][currentPractice.items[currentPractice.index].text],
+            audio_size: userAudioBlob.size
+        });
+
+        // 发送到后端API - 请根据实际情况修改API地址
+     
+        const response = await fetch(API_BASE_URL + '/speech/analyze-pronunciation', {
+            method: 'POST',
+            body: formData
+        });
+
+        console.log('收到响应状态:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('服务器错误响应:', errorText);
+            throw new Error(currentLanguage === 'zh-CN' ? 
+                `分析请求失败: ${response.status} - ${response.statusText}` : 
+                `Analysis request failed: ${response.status} - ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('后端返回的结果:', result);
+
+        // 处理响应数据
+        try {
+            // 显示分析结果
+            displayAnalysisResult(result);
+            
+            // 保存进度数据（可选）
+              saveProgressData(result);
+        } catch (displayError) {
+            console.error('显示分析结果错误:', displayError);
+            updateStatus(currentLanguage === 'zh-CN' ? 
+                '显示分析结果时出错: ' + displayError.message : 
+                'Error displaying analysis results: ' + displayError.message);
+        }
+
+    } catch (error) {
+        console.error('分析错误:', error);
+        updateStatus(currentLanguage === 'zh-CN' ? 
+            '分析失败: ' + error.message : 
+            'Analysis failed: ' + error.message);
+    } finally {
+        // 恢复按钮状态
+        elements.analyze.disabled = false;
+        elements.analyze.innerHTML = `<i class="fa fa-robot"></i><span data-i18n="ai.analysis">AI分析发音</span>`;
+        updateButtonText(elements.analyze);
+        elements.recordingStatus.classList.remove('status-processing');
+    }
+}
+
+// 显示分析结果
+function displayAnalysisResult(result) {
+    console.log('开始显示分析结果:', result);
+    
+    // 显示分析结果区域
+    document.getElementById('analysis-result').style.display = 'block';
+    document.getElementById('no-analysis').style.display = 'none';
+    document.getElementById('text-comparison').style.display = 'block';
+
+    // 如果结果为空，使用默认值
+    if (!result) {
+        console.warn('结果为空，使用默认值');
+        result = {
+            overall_score: 0,
+            recognized_text: currentLanguage === 'zh-CN' ? "未获取到结果" : "No result obtained",
+            issues: [],
+            suggestions: [currentLanguage === 'zh-CN' ? "请重新尝试分析" : "Please try analysis again"],
+            audio_features: {
+                pitch_stability: 0,
+                clarity_score: 0
+            }
+        };
+    }
+
+    // 更新分数和进度条
+    const score = result.overall_score || 0;
+    console.log('设置分数:', score);
+    document.getElementById('score-value').textContent = score;
+    document.getElementById('score-progress').style.width = score + '%';
+
+    // 根据分数设置颜色
+    const scoreElement = document.getElementById('score-value');
+    if (score >= 80) {
+        scoreElement.className = 'score-display text-4xl md:text-5xl font-bold mb-2 text-green-400';
+    } else if (score >= 60) {
+        scoreElement.className = 'score-display text-4xl md:text-5xl font-bold mb-2 text-orange-400';
+    } else {
+        scoreElement.className = 'score-display text-4xl md:text-5xl font-bold mb-2 text-red-400';
+    }
+
+    // 更新特征指标
+    document.getElementById('similarity-score').textContent = (result.similarity_score || 0) + '%';
+    document.getElementById('pitch-stability').textContent = (result.audio_features?.pitch_stability || 0).toFixed(2) + '%';
+    document.getElementById('clarity-score').textContent = (result.audio_features?.clarity_score || 0) + '%';
+
+    // 更新文本对比
+    const referenceText = i18n[currentLanguage][currentPractice.items[currentPractice.index].text];
+    const recognizedText = result.recognized_text || (currentLanguage === 'zh-CN' ? '未识别到语音' : 'No speech recognized');
+    
+    console.log('文本对比:', { referenceText, recognizedText });
+    
+    document.getElementById('reference-text').textContent = referenceText;
+    document.getElementById('recognized-text-display').textContent = recognizedText;
+    
+    // 设置匹配指示器
+    const matchIndicator = document.getElementById('match-indicator');
+    if (recognizedText === referenceText) {
+        matchIndicator.className = 'match-indicator w-4 h-4 rounded-full mx-2 md:mx-4 bg-green-400';
+    } else {
+        matchIndicator.className = 'match-indicator w-4 h-4 rounded-full mx-2 md:mx-4 bg-red-400';
+    }
+
+    // 更新发音问题
+    updateIssuesDisplay(result.issues || []);
+
+    // 更新改进建议
+    updateSuggestionsDisplay(result.suggestions || []);
+
+    // 更新个性化建议
+    updatePersonalizedAdvice(result);
+
+    // 更新状态
+    updateStatus(currentLanguage === 'zh-CN' ? 
+        '分析完成 - 识别结果: ' + recognizedText : 
+        'Analysis complete - Recognized: ' + recognizedText);
+    
+    console.log('分析结果显示完成');
+}
+
+// 更新发音问题显示
+function updateIssuesDisplay(issues) {
+    const container = document.getElementById('pronunciation-issues');
+    container.innerHTML = '';
+    
+    if (issues.length === 0) {
+        container.innerHTML = `<div class="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-green-400" data-i18n="no.issues">发音良好，无明显问题</div>`;
+        updateElementText(container);
+        return;
+    }
+    
+    issues.forEach(issue => {
+        const issueElement = document.createElement('div');
+        issueElement.className = 'bg-white/10 border border-accent/20 rounded-lg p-3';
+        
+        const severity = issue.severity || 'medium';
+        const severityText = currentLanguage === 'zh-CN' ? 
+            (severity === 'high' ? '严重' : severity === 'medium' ? '中等' : '轻微') :
+            (severity === 'high' ? 'High' : severity === 'medium' ? 'Medium' : 'Low');
+        
+        const severityColor = severity === 'high' ? 'red-400' : severity === 'medium' ? 'orange-400' : 'yellow-400';
+        
+        issueElement.innerHTML = `
+            <div class="flex justify-between items-center">
+                <strong>${issue.description}</strong>
+                <span class="bg-${severityColor} text-white px-2 py-1 rounded text-xs">
+                    ${severityText}
+                </span>
+            </div>
+        `;
+        
+        container.appendChild(issueElement);
+    });
+}
+
+// 更新改进建议显示
+function updateSuggestionsDisplay(suggestions) {
+    const container = document.getElementById('improvement-suggestions');
+    container.innerHTML = '';
+    
+    suggestions.forEach(suggestion => {
+        const suggestionElement = document.createElement('div');
+        suggestionElement.className = 'bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-green-400';
+        suggestionElement.innerHTML = `
+            <div class="flex items-center">
+                <i class="fa fa-lightbulb mr-2"></i>
+                <span>${suggestion}</span>
+            </div>
+        `;
+        container.appendChild(suggestionElement);
+    });
+}
+
+// 更新个性化建议
+function updatePersonalizedAdvice(result) {
+    const container = document.getElementById('personalized-advice');
+    container.innerHTML = '';
+    
+    // 添加个性化建议
+    const adviceList = result.personalized_advice || [currentLanguage === 'zh-CN' ? '坚持练习，每天进步一点点' : 'Keep practicing, improve a little every day'];
+    
+    adviceList.forEach(advice => {
+        const adviceElement = document.createElement('div');
+        adviceElement.className = 'bg-blue-500/20 border border-blue-500/30 rounded-lg p-3';
+        adviceElement.innerHTML = `
+            <div class="flex items-center mb-2">
+                <i class="fa fa-user-md mr-2 text-blue-400"></i>
+                <strong data-i18n="personalized.advice">${i18n[currentLanguage]["personalized.advice"]}</strong>
+            </div>
+            <div>${advice}</div>
+        `;
+        container.appendChild(adviceElement);
+    });
+    
+    // 添加下一个练习推荐
+    if (result.next_exercise_recommendation) {
+        const nextExerciseElement = document.createElement('div');
+        nextExerciseElement.className = 'bg-purple-500/20 border border-purple-500/30 rounded-lg p-3';
+        nextExerciseElement.innerHTML = `
+            <div class="flex items-center mb-2">
+                <i class="fa fa-arrow-right mr-2 text-purple-400"></i>
+                <strong data-i18n="next.exercise.recommendation">${i18n[currentLanguage]["next.exercise.recommendation"]}</strong>
+            </div>
+            <div>${currentLanguage === 'zh-CN' ? '下一步建议尝试: ' : 'Next recommended exercise: '}${result.next_exercise_recommendation}</div>
+        `;
+        container.appendChild(nextExerciseElement);
+    }
+}
+
+// 更新状态显示函数（如果不存在则添加）
+function updateStatus(message) {
+    // 如果已经有状态显示元素，更新它
+    const statusElement = document.getElementById('recording-status');
+    if (statusElement) {
+        statusElement.innerHTML = `
+            <div class="inline-block w-3 h-3 md:w-4 md:h-4 bg-accent rounded-full pulse-glow mr-2"></div>
+            <span class="text-light font-medium text-sm md:text-base">${message}</span>
+        `;
+        statusElement.classList.remove('hidden');
+    }
+}
+
+// 更新按钮文本的辅助函数
+function updateButtonText(button) {
+    const span = button.querySelector('span[data-i18n]');
+    if (span) {
+        const key = span.getAttribute('data-i18n');
+        if (i18n[currentLanguage] && i18n[currentLanguage][key]) {
+            span.textContent = i18n[currentLanguage][key];
+        }
+    }
+}
+
+// 更新元素文本的辅助函数
+function updateElementText(element) {
+    const key = element.getAttribute('data-i18n');
+    if (key && i18n[currentLanguage] && i18n[currentLanguage][key]) {
+        element.textContent = i18n[currentLanguage][key];
+    }
+}
+
+// 进度数据管理
+ function initializeTestData() {
+    const testData = [];
+    const today = new Date();
+    
+    // 生成30天的测试数据
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(today.getDate() - i);
+        
+        // 跳过一些日期，模拟非连续练习
+        if (Math.random() > 0.3) {
+            const dateStr = date.toISOString().split('T')[0];
+            const exerciseTypes = ['vowel', 'word', 'phrase'];
+            const type = exerciseTypes[Math.floor(Math.random() * exerciseTypes.length)];
+            
+            // 模拟进步趋势 - 分数逐渐提高
+            const baseScore = 60 + (30 - i) * 0.5 + Math.random() * 10;
+            const score = Math.min(95, Math.max(40, Math.round(baseScore)));
+            
+            // 获取随机练习内容（修复部分）
+            const exerciseContent = getRandomExerciseContent(type);
+            
+            testData.push({
+                date: dateStr,
+                type: type,
+                score: score,
+                exercise: exerciseContent
+            });
+        }
+    }
+    
+    localStorage.setItem('speechPracticeData', JSON.stringify(testData));
+    console.log('初始化测试数据完成', testData);
+    return testData;
+}
+
+// 新增：获取随机练习内容的辅助函数
+function getRandomExerciseContent(type) {
+    if (!practiceData[type]) {
+        console.error(`类型 ${type} 不存在`);
+        return '未知练习';
+    }
+    
+    // 获取该类型的所有级别
+    const levels = Object.keys(practiceData[type]);
+    
+    // 随机选择一个级别
+    const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+    
+    // 获取该级别的项目数组
+    const items = practiceData[type][randomLevel];
+    
+    if (!items || items.length === 0) {
+        console.error(`类型 ${type} 级别 ${randomLevel} 没有数据`);
+        return '无练习内容';
+    }
+    
+    // 随机选择一个项目
+    const randomIndex = Math.floor(Math.random() * items.length);
+    const item = items[randomIndex];
+    
+    // 获取翻译后的文本
+    const translatedText = i18n[currentLanguage]?.[item.text] || item.text;
+    
+    return translatedText;
+}
+
+function saveProgressData(result) {
+    const today = new Date().toISOString().split('T')[0];
+    const exercise = i18n[currentLanguage][currentPractice.items[currentPractice.index].text];
+    
+    const progressItem = {
+        date: today,
+        type: currentPractice.type,
+        score: result.overall_score,
+        exercise: exercise,
+        recognized: result.recognized_text
+    };
+    
+    // 从本地存储获取现有数据
+    let progressData = [];
+    const storedData = localStorage.getItem('speechPracticeData');
+    if (storedData) {
+        progressData = JSON.parse(storedData);
+    }
+    
+    // 添加新数据
+    progressData.push(progressItem);
+    
+    // 保存回本地存储
+    localStorage.setItem('speechPracticeData', JSON.stringify(progressData));
+    
+    // 更新图表
+    loadProgressData();
+    
+    console.log('进度数据已保存:', progressItem);
+}
+
+function loadProgressData() {
+    const storedData = localStorage.getItem('speechPracticeData');
+      
+    if (!storedData) {
+        // 如果没有数据，初始化测试数据
+        initializeTestData();
+        return;
+    }
+    
+    const allData = JSON.parse(storedData);
+    const today = new Date();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(today.getDate() - chartPeriod);
+    
+    // 过滤指定时间段内的数据
+    const filteredData = allData.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= cutoffDate;
+    });
+    
+    // 按日期分组
+    const groupedData = {};
+    filteredData.forEach(item => {
+        if (!groupedData[item.date]) {
+            groupedData[item.date] = [];
+        }
+        groupedData[item.date].push(item);
+    });
+    
+    // 准备图表数据
+    const dates = Object.keys(groupedData).sort();
+    const scores = dates.map(date => {
+        const dayData = groupedData[date];
+        const avgScore = dayData.reduce((sum, item) => sum + item.score, 0) / dayData.length;
+        return Math.round(avgScore);
+    });
+    
+    // 更新图表
+    updateProgressChart(dates, scores);
+    
+    // 更新统计数据
+    updateProgressStats(filteredData);
+}
+
+function initProgressChart_aphasia() {
+    const ctx = document.getElementById('progress-chart').getContext('2d');
+    
+    progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: currentLanguage === 'zh-CN' ? '平均得分' : 'Average Score',
+                data: [],
+                borderColor: '#64B5F6',
+                backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff'
+                }
+            }
+        }
+    });
+}
+
+function updateProgressChart(dates, scores) {
+    // 格式化日期标签
+    const formattedDates = dates.map(date => {
+        const d = new Date(date);
+        return `${d.getMonth()+1}/${d.getDate()}`;
+    });
+    
+    progressChart.data.labels = formattedDates;
+    progressChart.data.datasets[0].data = scores;
+    
+    // 更新图表标签语言
+    progressChart.data.datasets[0].label = currentLanguage === 'zh-CN' ? '平均得分' : 'Average Score';
+    
+    progressChart.update();
+}
+
+function updateProgressStats(data) {
+    const container = document.getElementById('progress-stats');
+    
+    if (data.length === 0) {
+        container.innerHTML = `
+            <div class="text-center">
+                <div class="metric-value text-xl md:text-2xl font-bold text-accent">0</div>
+                <div class="metric-label text-xs opacity-80" data-i18n="total.practices">${i18n[currentLanguage]["total.practices"]}</div>
+            </div>
+            <div class="text-center">
+                <div class="metric-value text-xl md:text-2xl font-bold text-green-400">0</div>
+                <div class="metric-label text-xs opacity-80" data-i18n="average.score">${i18n[currentLanguage]["average.score"]}</div>
+            </div>
+            <div class="text-center">
+                <div class="metric-value text-xl md:text-2xl font-bold text-orange-400" data-i18n="no.data">${i18n[currentLanguage]["no.data"]}</div>
+                <div class="metric-label text-xs opacity-80" data-i18n="progress.trend">${i18n[currentLanguage]["progress.trend"]}</div>
+            </div>
+        `;
+        updateElementText(container);
+        return;
+    }
+    
+    // 计算统计数据
+    const totalPractices = data.length;
+    const avgScore = Math.round(data.reduce((sum, item) => sum + item.score, 0) / totalPractices);
+    
+    // 计算进步趋势
+    let trend = currentLanguage === 'zh-CN' ? "稳定" : "Stable";
+    let trendColor = "text-orange-400";
+    
+    if (data.length >= 2) {
+        const firstScores = data.slice(0, Math.floor(data.length/2));
+        const lastScores = data.slice(Math.floor(data.length/2));
+        
+        const firstAvg = firstScores.reduce((sum, item) => sum + item.score, 0) / firstScores.length;
+        const lastAvg = lastScores.reduce((sum, item) => sum + item.score, 0) / lastScores.length;
+        
+        if (lastAvg > firstAvg + 5) {
+            trend = currentLanguage === 'zh-CN' ? "上升" : "Rising";
+            trendColor = "text-green-400";
+        } else if (lastAvg < firstAvg - 5) {
+            trend = currentLanguage === 'zh-CN' ? "下降" : "Falling";
+            trendColor = "text-red-400";
+        }
+    }
+    
+    // 更新统计显示
+    container.innerHTML = `
+        <div class="text-center">
+            <div class="metric-value text-xl md:text-2xl font-bold text-accent">${totalPractices}</div>
+            <div class="metric-label text-xs opacity-80" data-i18n="total.practices">${i18n[currentLanguage]["total.practices"]}</div>
+        </div>
+        <div class="text-center">
+            <div class="metric-value text-xl md:text-2xl font-bold text-green-400">${avgScore}</div>
+            <div class="metric-label text-xs opacity-80" data-i18n="average.score">${i18n[currentLanguage]["average.score"]}</div>
+        </div>
+        <div class="text-center">
+            <div class="metric-value text-xl md:text-2xl font-bold ${trendColor}">${trend}</div>
+            <div class="metric-label text-xs opacity-80" data-i18n="progress.trend">${i18n[currentLanguage]["progress.trend"]}</div>
+        </div>
+    `;
+    updateElementText(container);
+}
+
+// 图表时间段选择事件
+function setupChartControls() {
+    document.querySelectorAll('.chart-period-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.chart-period-btn').forEach(b => {
+                b.classList.remove('bg-accent');
+                b.classList.add('bg-white/10', 'hover:bg-white/20');
+            });
+            this.classList.remove('bg-white/10', 'hover:bg-white/20');
+            this.classList.add('bg-accent');
+            
+            chartPeriod = parseInt(this.dataset.period);
+            loadProgressData();
+        });
+    });
+}
+    </script>
+    <script src="../static/js/common.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,2008 @@
+{
+  "action": "knee_flexion_extension",
+  "category": "lower_limb",
+  "samples": [
+    {
+      "timestamp": "2025-11-13T16:32:48.170Z",
+      "features": [
+        60,
+        25,
+        80,
+        76.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 60,
+        "resistance_force": 25,
+        "gait_symmetry": 80,
+        "movement_smoothness": 76.9,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.246Z",
+      "features": [
+        64.5,
+        26.1,
+        81.1,
+        77.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 64.5,
+        "resistance_force": 26.1,
+        "gait_symmetry": 81.1,
+        "movement_smoothness": 77.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.352Z",
+      "features": [
+        70.7,
+        27.7,
+        82.7,
+        77.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 70.7,
+        "resistance_force": 27.7,
+        "gait_symmetry": 82.7,
+        "movement_smoothness": 77.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.442Z",
+      "features": [
+        75.5,
+        29,
+        84,
+        78.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 75.5,
+        "resistance_force": 29,
+        "gait_symmetry": 84,
+        "movement_smoothness": 78.4,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.548Z",
+      "features": [
+        80.5,
+        30.4,
+        85.5,
+        79
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 80.5,
+        "resistance_force": 30.4,
+        "gait_symmetry": 85.5,
+        "movement_smoothness": 79,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.647Z",
+      "features": [
+        84.5,
+        31.6,
+        86.9,
+        79.7
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 84.5,
+        "resistance_force": 31.6,
+        "gait_symmetry": 86.9,
+        "movement_smoothness": 79.7,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.748Z",
+      "features": [
+        87.4,
+        32.6,
+        88.2,
+        80.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 87.4,
+        "resistance_force": 32.6,
+        "gait_symmetry": 88.2,
+        "movement_smoothness": 80.4,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.846Z",
+      "features": [
+        89.3,
+        33.5,
+        89.4,
+        81.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 89.3,
+        "resistance_force": 33.5,
+        "gait_symmetry": 89.4,
+        "movement_smoothness": 81.1,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:48.946Z",
+      "features": [
+        90,
+        34.2,
+        90.5,
+        81.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:48",
+        "knee_angle": 90,
+        "resistance_force": 34.2,
+        "gait_symmetry": 90.5,
+        "movement_smoothness": 81.8,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.046Z",
+      "features": [
+        89.5,
+        34.7,
+        91.5,
+        82.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 89.5,
+        "resistance_force": 34.7,
+        "gait_symmetry": 91.5,
+        "movement_smoothness": 82.6,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.146Z",
+      "features": [
+        87.8,
+        34.9,
+        92.4,
+        83.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 87.8,
+        "resistance_force": 34.9,
+        "gait_symmetry": 92.4,
+        "movement_smoothness": 83.4,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.246Z",
+      "features": [
+        85.1,
+        35,
+        93.2,
+        84.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 85.1,
+        "resistance_force": 35,
+        "gait_symmetry": 93.2,
+        "movement_smoothness": 84.2,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.357Z",
+      "features": [
+        80.8,
+        34.8,
+        93.9,
+        85.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 80.8,
+        "resistance_force": 34.8,
+        "gait_symmetry": 93.9,
+        "movement_smoothness": 85.1,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.454Z",
+      "features": [
+        76.3,
+        34.4,
+        94.4,
+        85.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 76.3,
+        "resistance_force": 34.4,
+        "gait_symmetry": 94.4,
+        "movement_smoothness": 85.8,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.552Z",
+      "features": [
+        71.1,
+        33.8,
+        94.7,
+        86.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 71.1,
+        "resistance_force": 33.8,
+        "gait_symmetry": 94.7,
+        "movement_smoothness": 86.6,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.648Z",
+      "features": [
+        65.5,
+        33,
+        94.9,
+        87.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 65.5,
+        "resistance_force": 33,
+        "gait_symmetry": 94.9,
+        "movement_smoothness": 87.4,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.746Z",
+      "features": [
+        59.7,
+        32,
+        95,
+        88.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 59.7,
+        "resistance_force": 32,
+        "gait_symmetry": 95,
+        "movement_smoothness": 88.1,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.847Z",
+      "features": [
+        53.7,
+        30.9,
+        94.9,
+        88.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 53.7,
+        "resistance_force": 30.9,
+        "gait_symmetry": 94.9,
+        "movement_smoothness": 88.9,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:49.947Z",
+      "features": [
+        48,
+        29.6,
+        94.7,
+        89.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:49",
+        "knee_angle": 48,
+        "resistance_force": 29.6,
+        "gait_symmetry": 94.7,
+        "movement_smoothness": 89.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.042Z",
+      "features": [
+        42.9,
+        28.3,
+        94.3,
+        90.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 42.9,
+        "resistance_force": 28.3,
+        "gait_symmetry": 94.3,
+        "movement_smoothness": 90.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.147Z",
+      "features": [
+        38.2,
+        26.8,
+        93.8,
+        91
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 38.2,
+        "resistance_force": 26.8,
+        "gait_symmetry": 93.8,
+        "movement_smoothness": 91,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.247Z",
+      "features": [
+        34.6,
+        25.3,
+        93.1,
+        91.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 34.6,
+        "resistance_force": 25.3,
+        "gait_symmetry": 93.1,
+        "movement_smoothness": 91.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.347Z",
+      "features": [
+        31.9,
+        23.8,
+        92.3,
+        92.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 31.9,
+        "resistance_force": 23.8,
+        "gait_symmetry": 92.3,
+        "movement_smoothness": 92.2,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.446Z",
+      "features": [
+        30.4,
+        22.3,
+        91.4,
+        92.7
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 30.4,
+        "resistance_force": 22.3,
+        "gait_symmetry": 91.4,
+        "movement_smoothness": 92.7,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.550Z",
+      "features": [
+        30,
+        20.8,
+        90.4,
+        93.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 30,
+        "resistance_force": 20.8,
+        "gait_symmetry": 90.4,
+        "movement_smoothness": 93.2,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.654Z",
+      "features": [
+        31,
+        19.5,
+        89.2,
+        93.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 31,
+        "resistance_force": 19.5,
+        "gait_symmetry": 89.2,
+        "movement_smoothness": 93.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.750Z",
+      "features": [
+        32.9,
+        18.4,
+        88,
+        94
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 32.9,
+        "resistance_force": 18.4,
+        "gait_symmetry": 88,
+        "movement_smoothness": 94,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.849Z",
+      "features": [
+        36,
+        17.3,
+        86.7,
+        94.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 36,
+        "resistance_force": 17.3,
+        "gait_symmetry": 86.7,
+        "movement_smoothness": 94.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:50.945Z",
+      "features": [
+        39.9,
+        16.5,
+        85.4,
+        94.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:50",
+        "knee_angle": 39.9,
+        "resistance_force": 16.5,
+        "gait_symmetry": 85.4,
+        "movement_smoothness": 94.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.053Z",
+      "features": [
+        45.1,
+        15.8,
+        83.9,
+        94.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 45.1,
+        "resistance_force": 15.8,
+        "gait_symmetry": 83.9,
+        "movement_smoothness": 94.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.149Z",
+      "features": [
+        50.3,
+        15.3,
+        82.5,
+        94.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 50.3,
+        "resistance_force": 15.3,
+        "gait_symmetry": 82.5,
+        "movement_smoothness": 94.9,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.247Z",
+      "features": [
+        56.1,
+        15,
+        81,
+        95
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 56.1,
+        "resistance_force": 15,
+        "gait_symmetry": 81,
+        "movement_smoothness": 95,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.344Z",
+      "features": [
+        61.9,
+        15,
+        79.5,
+        95
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 61.9,
+        "resistance_force": 15,
+        "gait_symmetry": 79.5,
+        "movement_smoothness": 95,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.447Z",
+      "features": [
+        68,
+        15.2,
+        78,
+        94.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 68,
+        "resistance_force": 15.2,
+        "gait_symmetry": 78,
+        "movement_smoothness": 94.9,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.547Z",
+      "features": [
+        73.6,
+        15.6,
+        76.5,
+        94.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 73.6,
+        "resistance_force": 15.6,
+        "gait_symmetry": 76.5,
+        "movement_smoothness": 94.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.649Z",
+      "features": [
+        78.7,
+        16.2,
+        75.1,
+        94.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 78.7,
+        "resistance_force": 16.2,
+        "gait_symmetry": 75.1,
+        "movement_smoothness": 94.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.756Z",
+      "features": [
+        83.2,
+        17.1,
+        73.6,
+        94.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 83.2,
+        "resistance_force": 17.1,
+        "gait_symmetry": 73.6,
+        "movement_smoothness": 94.4,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.848Z",
+      "features": [
+        86.4,
+        18.1,
+        72.3,
+        94.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 86.4,
+        "resistance_force": 18.1,
+        "gait_symmetry": 72.3,
+        "movement_smoothness": 94.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:51.948Z",
+      "features": [
+        88.7,
+        19.2,
+        71.1,
+        93.7
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:51",
+        "knee_angle": 88.7,
+        "resistance_force": 19.2,
+        "gait_symmetry": 71.1,
+        "movement_smoothness": 93.7,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.047Z",
+      "features": [
+        89.9,
+        20.5,
+        69.9,
+        93.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 89.9,
+        "resistance_force": 20.5,
+        "gait_symmetry": 69.9,
+        "movement_smoothness": 93.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.150Z",
+      "features": [
+        89.8,
+        21.9,
+        68.9,
+        92.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 89.8,
+        "resistance_force": 21.9,
+        "gait_symmetry": 68.9,
+        "movement_smoothness": 92.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.249Z",
+      "features": [
+        88.6,
+        23.3,
+        67.9,
+        92.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 88.6,
+        "resistance_force": 23.3,
+        "gait_symmetry": 67.9,
+        "movement_smoothness": 92.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.346Z",
+      "features": [
+        86.4,
+        24.8,
+        67.1,
+        91.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 86.4,
+        "resistance_force": 24.8,
+        "gait_symmetry": 67.1,
+        "movement_smoothness": 91.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.448Z",
+      "features": [
+        82.9,
+        26.3,
+        66.4,
+        91.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 82.9,
+        "resistance_force": 26.3,
+        "gait_symmetry": 66.4,
+        "movement_smoothness": 91.2,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.548Z",
+      "features": [
+        78.7,
+        27.8,
+        65.8,
+        90.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 78.7,
+        "resistance_force": 27.8,
+        "gait_symmetry": 65.8,
+        "movement_smoothness": 90.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.645Z",
+      "features": [
+        73.7,
+        29.2,
+        65.4,
+        89.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 73.7,
+        "resistance_force": 29.2,
+        "gait_symmetry": 65.4,
+        "movement_smoothness": 89.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.748Z",
+      "features": [
+        68,
+        30.5,
+        65.1,
+        89.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 68,
+        "resistance_force": 30.5,
+        "gait_symmetry": 65.1,
+        "movement_smoothness": 89.1,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.848Z",
+      "features": [
+        62.1,
+        31.7,
+        65,
+        88.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 62.1,
+        "resistance_force": 31.7,
+        "gait_symmetry": 65,
+        "movement_smoothness": 88.3,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:52.948Z",
+      "features": [
+        56.1,
+        32.7,
+        65,
+        87.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:52",
+        "knee_angle": 56.1,
+        "resistance_force": 32.7,
+        "gait_symmetry": 65,
+        "movement_smoothness": 87.6,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.048Z",
+      "features": [
+        50.2,
+        33.6,
+        65.2,
+        86.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 50.2,
+        "resistance_force": 33.6,
+        "gait_symmetry": 65.2,
+        "movement_smoothness": 86.8,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.150Z",
+      "features": [
+        44.7,
+        34.3,
+        65.5,
+        86
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 44.7,
+        "resistance_force": 34.3,
+        "gait_symmetry": 65.5,
+        "movement_smoothness": 86,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.254Z",
+      "features": [
+        39.7,
+        34.7,
+        66,
+        85.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 39.7,
+        "resistance_force": 34.7,
+        "gait_symmetry": 66,
+        "movement_smoothness": 85.2,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.347Z",
+      "features": [
+        36,
+        35,
+        66.6,
+        84.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 36,
+        "resistance_force": 35,
+        "gait_symmetry": 66.6,
+        "movement_smoothness": 84.4,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.448Z",
+      "features": [
+        32.8,
+        35,
+        67.3,
+        83.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 32.8,
+        "resistance_force": 35,
+        "gait_symmetry": 67.3,
+        "movement_smoothness": 83.6,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.548Z",
+      "features": [
+        30.9,
+        34.8,
+        68.2,
+        82.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 30.9,
+        "resistance_force": 34.8,
+        "gait_symmetry": 68.2,
+        "movement_smoothness": 82.8,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.650Z",
+      "features": [
+        30,
+        34.3,
+        69.2,
+        82
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 30,
+        "resistance_force": 34.3,
+        "gait_symmetry": 69.2,
+        "movement_smoothness": 82,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.748Z",
+      "features": [
+        30.4,
+        33.7,
+        70.3,
+        81.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 30.4,
+        "resistance_force": 33.7,
+        "gait_symmetry": 70.3,
+        "movement_smoothness": 81.3,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.853Z",
+      "features": [
+        32,
+        32.8,
+        71.5,
+        80.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 32,
+        "resistance_force": 32.8,
+        "gait_symmetry": 71.5,
+        "movement_smoothness": 80.5,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:53.943Z",
+      "features": [
+        34.4,
+        31.9,
+        72.7,
+        79.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:53",
+        "knee_angle": 34.4,
+        "resistance_force": 31.9,
+        "gait_symmetry": 72.7,
+        "movement_smoothness": 79.9,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.052Z",
+      "features": [
+        38.4,
+        30.7,
+        74.1,
+        79.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 38.4,
+        "resistance_force": 30.7,
+        "gait_symmetry": 74.1,
+        "movement_smoothness": 79.2,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.148Z",
+      "features": [
+        42.8,
+        29.4,
+        75.5,
+        78.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 42.8,
+        "resistance_force": 29.4,
+        "gait_symmetry": 75.5,
+        "movement_smoothness": 78.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.248Z",
+      "features": [
+        48,
+        28,
+        76.9,
+        78
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 48,
+        "resistance_force": 28,
+        "gait_symmetry": 76.9,
+        "movement_smoothness": 78,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.356Z",
+      "features": [
+        54.2,
+        26.5,
+        78.5,
+        77.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 54.2,
+        "resistance_force": 26.5,
+        "gait_symmetry": 78.5,
+        "movement_smoothness": 77.4,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.451Z",
+      "features": [
+        59.8,
+        25,
+        80,
+        76.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 59.8,
+        "resistance_force": 25,
+        "gait_symmetry": 80,
+        "movement_smoothness": 76.9,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.548Z",
+      "features": [
+        65.6,
+        23.6,
+        81.4,
+        76.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 65.6,
+        "resistance_force": 23.6,
+        "gait_symmetry": 81.4,
+        "movement_smoothness": 76.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.650Z",
+      "features": [
+        71.5,
+        22.1,
+        82.9,
+        76.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 71.5,
+        "resistance_force": 22.1,
+        "gait_symmetry": 82.9,
+        "movement_smoothness": 76.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.748Z",
+      "features": [
+        76.6,
+        20.7,
+        84.3,
+        75.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 76.6,
+        "resistance_force": 20.7,
+        "gait_symmetry": 84.3,
+        "movement_smoothness": 75.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.849Z",
+      "features": [
+        81.3,
+        19.4,
+        85.8,
+        75.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 81.3,
+        "resistance_force": 19.4,
+        "gait_symmetry": 85.8,
+        "movement_smoothness": 75.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:54.952Z",
+      "features": [
+        85.2,
+        18.2,
+        87.2,
+        75.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:54",
+        "knee_angle": 85.2,
+        "resistance_force": 18.2,
+        "gait_symmetry": 87.2,
+        "movement_smoothness": 75.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.046Z",
+      "features": [
+        87.8,
+        17.2,
+        88.4,
+        75.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 87.8,
+        "resistance_force": 17.2,
+        "gait_symmetry": 88.4,
+        "movement_smoothness": 75.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.148Z",
+      "features": [
+        89.5,
+        16.4,
+        89.6,
+        75
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 89.5,
+        "resistance_force": 16.4,
+        "gait_symmetry": 89.6,
+        "movement_smoothness": 75,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.244Z",
+      "features": [
+        90,
+        15.7,
+        90.7,
+        75
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 90,
+        "resistance_force": 15.7,
+        "gait_symmetry": 90.7,
+        "movement_smoothness": 75,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.428Z",
+      "features": [
+        87.8,
+        15.1,
+        92.4,
+        75.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 87.8,
+        "resistance_force": 15.1,
+        "gait_symmetry": 92.4,
+        "movement_smoothness": 75.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.445Z",
+      "features": [
+        87.5,
+        15,
+        92.5,
+        75.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 87.5,
+        "resistance_force": 15,
+        "gait_symmetry": 92.5,
+        "movement_smoothness": 75.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.546Z",
+      "features": [
+        84.5,
+        15,
+        93.3,
+        75.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 84.5,
+        "resistance_force": 15,
+        "gait_symmetry": 93.3,
+        "movement_smoothness": 75.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.647Z",
+      "features": [
+        80.6,
+        15.2,
+        93.9,
+        75.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 80.6,
+        "resistance_force": 15.2,
+        "gait_symmetry": 93.9,
+        "movement_smoothness": 75.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.746Z",
+      "features": [
+        75.8,
+        15.7,
+        94.4,
+        75.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 75.8,
+        "resistance_force": 15.7,
+        "gait_symmetry": 94.4,
+        "movement_smoothness": 75.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.848Z",
+      "features": [
+        70.4,
+        16.3,
+        94.8,
+        76.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 70.4,
+        "resistance_force": 16.3,
+        "gait_symmetry": 94.8,
+        "movement_smoothness": 76.2,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:55.947Z",
+      "features": [
+        64.6,
+        17.2,
+        95,
+        76.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:55",
+        "knee_angle": 64.6,
+        "resistance_force": 17.2,
+        "gait_symmetry": 95,
+        "movement_smoothness": 76.6,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.048Z",
+      "features": [
+        58.6,
+        18.2,
+        95,
+        77
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 58.6,
+        "resistance_force": 18.2,
+        "gait_symmetry": 95,
+        "movement_smoothness": 77,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.145Z",
+      "features": [
+        52.8,
+        19.3,
+        94.9,
+        77.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 52.8,
+        "resistance_force": 19.3,
+        "gait_symmetry": 94.9,
+        "movement_smoothness": 77.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.247Z",
+      "features": [
+        47.1,
+        20.6,
+        94.6,
+        78.1
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 47.1,
+        "resistance_force": 20.6,
+        "gait_symmetry": 94.6,
+        "movement_smoothness": 78.1,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.343Z",
+      "features": [
+        42.1,
+        22,
+        94.2,
+        78.7
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 42.1,
+        "resistance_force": 22,
+        "gait_symmetry": 94.2,
+        "movement_smoothness": 78.7,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.452Z",
+      "features": [
+        37.3,
+        23.6,
+        93.6,
+        79.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 37.3,
+        "resistance_force": 23.6,
+        "gait_symmetry": 93.6,
+        "movement_smoothness": 79.4,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.552Z",
+      "features": [
+        33.9,
+        25.1,
+        93,
+        80
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 33.9,
+        "resistance_force": 25.1,
+        "gait_symmetry": 93,
+        "movement_smoothness": 80,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.657Z",
+      "features": [
+        31.4,
+        26.6,
+        92.1,
+        80.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 31.4,
+        "resistance_force": 26.6,
+        "gait_symmetry": 92.1,
+        "movement_smoothness": 80.8,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.750Z",
+      "features": [
+        30.2,
+        28,
+        91.2,
+        81.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 30.2,
+        "resistance_force": 28,
+        "gait_symmetry": 91.2,
+        "movement_smoothness": 81.5,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.859Z",
+      "features": [
+        30.1,
+        29.5,
+        90.1,
+        82.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "mid",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 30.1,
+        "resistance_force": 29.5,
+        "gait_symmetry": 90.1,
+        "movement_smoothness": 82.3,
+        "rehab_stage": "mid",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:56.951Z",
+      "features": [
+        31.2,
+        30.7,
+        89,
+        83
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:56",
+        "knee_angle": 31.2,
+        "resistance_force": 30.7,
+        "gait_symmetry": 89,
+        "movement_smoothness": 83,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.045Z",
+      "features": [
+        33.3,
+        31.8,
+        87.8,
+        83.8
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 33.3,
+        "resistance_force": 31.8,
+        "gait_symmetry": 87.8,
+        "movement_smoothness": 83.8,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.143Z",
+      "features": [
+        36.4,
+        32.8,
+        86.6,
+        84.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 36.4,
+        "resistance_force": 32.8,
+        "gait_symmetry": 86.6,
+        "movement_smoothness": 84.5,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.252Z",
+      "features": [
+        41,
+        33.7,
+        85,
+        85.4
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 41,
+        "resistance_force": 33.7,
+        "gait_symmetry": 85,
+        "movement_smoothness": 85.4,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.348Z",
+      "features": [
+        45.7,
+        34.3,
+        83.7,
+        86.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 45.7,
+        "resistance_force": 34.3,
+        "gait_symmetry": 83.7,
+        "movement_smoothness": 86.2,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.451Z",
+      "features": [
+        51.4,
+        34.8,
+        82.2,
+        87
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 51.4,
+        "resistance_force": 34.8,
+        "gait_symmetry": 82.2,
+        "movement_smoothness": 87,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.550Z",
+      "features": [
+        57.3,
+        35,
+        80.7,
+        87.7
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 57.3,
+        "resistance_force": 35,
+        "gait_symmetry": 80.7,
+        "movement_smoothness": 87.7,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.650Z",
+      "features": [
+        63.3,
+        35,
+        79.2,
+        88.5
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 63.3,
+        "resistance_force": 35,
+        "gait_symmetry": 79.2,
+        "movement_smoothness": 88.5,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.749Z",
+      "features": [
+        69.1,
+        34.7,
+        77.7,
+        89.2
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 69.1,
+        "resistance_force": 34.7,
+        "gait_symmetry": 77.7,
+        "movement_smoothness": 89.2,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.846Z",
+      "features": [
+        74.5,
+        34.3,
+        76.3,
+        89.9
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 74.5,
+        "resistance_force": 34.3,
+        "gait_symmetry": 76.3,
+        "movement_smoothness": 89.9,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:57.950Z",
+      "features": [
+        79.6,
+        33.6,
+        74.8,
+        90.6
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:57",
+        "knee_angle": 79.6,
+        "resistance_force": 33.6,
+        "gait_symmetry": 74.8,
+        "movement_smoothness": 90.6,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    },
+    {
+      "timestamp": "2025-11-13T16:32:58.050Z",
+      "features": [
+        83.6,
+        32.8,
+        73.4,
+        91.3
+      ],
+      "exercise_type": "knee_flexion_extension",
+      "rehab_stage": "advanced",
+      "raw_data": {
+        "timestamp": "00:32:58",
+        "knee_angle": 83.6,
+        "resistance_force": 32.8,
+        "gait_symmetry": 73.4,
+        "movement_smoothness": 91.3,
+        "rehab_stage": "advanced",
+        "exercise_type": "knee_flexion_extension"
+      }
+    }
+  ],
+  "collection_time": "2025-11-14T00:33:02.516877",
+  "total_samples": 100
+}

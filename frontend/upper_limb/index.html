@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上肢康复动作矫正系统 - 患者端</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0066CC',
+                        secondary: '#1E88E5',
+                        accent: '#64B5F6',
+                        dark: '#0D47A1',
+                        light: '#E3F2FD',
+                        deep: '#0A3A7A',
+                        med: '#1565C0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-gradient {
+                background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+            }
+            .bg-grid {
+                background-image: 
+                    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+                background-size: 20px 20px, 100% 100%;
+            }
+            .border-glow {
+                box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+            }
+            .pulse-glow {
+                animation: pulse-glow 2s infinite;
+            }
+            @keyframes pulse-glow {
+                0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+                50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+            }
+            .fade-in {
+                animation: fadeIn 1s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .status-good {
+                background-color: #10B981;
+            }
+            .status-fair {
+                background-color: #F59E0B;
+            }
+            .status-poor {
+                background-color: #EF4444;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+    <!-- 顶部装饰线条 -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+    
+    <!-- 页面容器 -->
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- 顶部导航 -->
+        <header class="flex justify-between items-center mb-8 fade-in">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-heartbeat text-xl text-light"></i>
+                </div>
+                <div class="text-xl font-semibold">上肢康复动作矫正系统</div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-sm opacity-80">患者端 · 智能辅助脑卒中患者上肢康复训练</div>
+                <a href="/index.html" title="返回首页" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-all">
+                    <i class="fa fa-home text-xl text-light"></i>
+                </a>
+            </div>
+        </header>
+        
+        <!-- 主要内容区 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- MediaPipe实时姿态采集区域 -->
+            <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in">
+                <h2 class="text-2xl font-bold text-center mb-6">MediaPipe实时姿态采集</h2>
+                
+                <div class="relative mb-6">
+                    <div class="video-container rounded-xl overflow-hidden relative">
+                        <video id="videoElement" autoplay playsinline class="w-full h-auto bg-black"></video>
+                        <canvas id="canvasElement" class="absolute top-0 left-0 w-full h-full"></canvas>
+                    </div>
+                    <div class="absolute top-4 right-4 bg-black/50 px-3 py-1 rounded-full text-sm">
+                        <span id="fpsCounter">FPS: 0</span>
+                    </div>
+                </div>
+                
+                <!-- 状态指示器 -->
+                <div class="flex justify-center mb-6">
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center">
+                            <div id="cameraStatus" class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                            <span class="text-sm">摄像头状态</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="poseStatus" class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                            <span class="text-sm">姿态检测</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="collectStatus" class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                            <span class="text-sm">数据采集88</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 角度显示 -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white/5 rounded-xl p-4 text-center">
+                        <div class="text-sm opacity-80 mb-2">肩关节角度</div>
+                        <div class="text-3xl font-bold text-accent mb-1" id="shoulderAngle">0°</div>
+                        <div class="text-xs opacity-70">标准: 90°</div>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 text-center">
+                        <div class="text-sm opacity-80 mb-2">肘关节角度</div>
+                        <div class="text-3xl font-bold text-accent mb-1" id="elbowAngle">0°</div>
+                        <div class="text-xs opacity-70">标准: 135°</div>
+                    </div>
+                </div>
+                
+                <!-- 控制按钮 -->
+                <div class="flex space-x-3">
+                    <button id="startBtn" class="flex-1 py-3 bg-accent hover:bg-accent/80 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-play mr-2"></i>开始训练
+                    </button>
+                    <button id="pauseBtn" class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-pause mr-2"></i>暂停
+                    </button>
+                    <button id="resetBtn" class="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-refresh mr-2"></i>重置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 实时反馈与矫正区域 -->
+            <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in" style="animation-delay: 0.2s">
+                <h2 class="text-2xl font-bold text-center mb-6">实时反馈与矫正</h2>
+                <!-- 新增模型状态信息 -->
+                <div class="bg-white/5 rounded-xl p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">模型状态</h3>
+                    <div class="flex flex-wrap gap-4 text-base">
+                        <div>状态：<span class="text-green-400 font-bold">已训练</span></div>
+                        <div>训练前平均偏差：<span class="font-bold">24.88°</span></div>
+                        <div>训练后平均偏差：<span class="font-bold">23.50°</span></div>
+                        <div>改善率：<span class="font-bold">5.6%</span></div>
+                    </div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-semibold mb-3">系统反馈</h3>
+                    <div class="feedback" id="feedbackContainer">
+                        <div class="text-center opacity-70">
+                            <i class="fa fa-info-circle mr-2"></i>系统就绪 - 请点击"开始训练"按钮开始康复训练
+                        </div>
+                    </div>
+                </div>
+                <!-- 控制按钮 -->
+                <div class="flex space-x-3 mb-6">
+                    <button id="enableAudio" class="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-volume-up mr-2"></i>启用语音提示
+                    </button>
+                    <button id="selectExercise" class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-list-alt mr-2"></i>选择训练动作
+                    </button>
+                </div>
+                <!-- 训练进度 -->
+                <h3 class="text-lg font-semibold mb-4">训练进度</h3>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white/5 rounded-xl p-4 text-center">
+                        <div class="text-sm opacity-80 mb-2">今日完成次数</div>
+                        <div class="text-3xl font-bold text-accent mb-1" id="sessionCount">0</div>
+                        <div class="text-xs opacity-70">目标: 20次</div>
+                        <div class="w-full h-2 bg-white/20 rounded-full mt-2 overflow-hidden">
+                            <div id="sessionProgress" class="h-full bg-accent rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 text-center">
+                        <div class="text-sm opacity-80 mb-2">平均准确率</div>
+                        <div class="text-3xl font-bold text-accent mb-1" id="accuracyRate">0%</div>
+                        <div class="text-xs opacity-70">目标: 80%</div>
+                        <div class="w-full h-2 bg-white/20 rounded-full mt-2 overflow-hidden">
+                            <div id="accuracyProgress" class="h-full bg-green-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 数据采集控制 -->
+                <h3 class="text-lg font-semibold mb-4">数据采集</h3>
+                <div class="flex space-x-3">
+                    <button id="collectBtn" class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-database mr-2"></i>开始采集99
+                    </button>
+                    <button id="sendBtn" class="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-xl transition-all duration-300 font-medium flex items-center justify-center">
+                        <i class="fa fa-cloud-upload mr-2"></i>发送数据
+                    </button>
+                </div>
+                <div class="text-center mt-2 text-sm opacity-70">
+                    <span id="sampleCount">已采集: 0 个样本</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 关节角度变化图表 -->
+        <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in" style="animation-delay: 0.4s">
+            <h2 class="text-2xl font-bold text-center mb-6">关节角度变化</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 肩关节角度变化 -->
+                <div class="bg-white/5 rounded-xl p-4">
+                    <h3 class="text-lg font-semibold mb-3 text-center">肩关节角度变化</h3>
+                    <div id="shoulderChart" class="w-full h-64 flex items-center justify-center">
+                        <canvas class="w-full h-full"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 肘关节角度变化 -->
+                <div class="bg-white/5 rounded-xl p-4">
+                    <h3 class="text-lg font-semibold mb-3 text-center">肘关节角度变化</h3>
+                    <div id="elbowChart" class="w-full h-64 flex items-center justify-center">
+                        <canvas class="w-full h-full"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图表控制 -->
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="resetCharts" class="py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium">
+                    <i class="fa fa-refresh mr-2"></i>重置图表
+                </button>
+                <button id="exportCharts" class="py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-300 font-medium">
+                    <i class="fa fa-download mr-2"></i>导出数据
+                </button>
+            </div>
+        </div>
+        
+
+        
+        <!-- 底部信息 -->
+        <footer class="text-center pt-8 mt-8 border-t border-white/10 fade-in" style="animation-delay: 0.8s">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center justify-center md:justify-start">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+                            <i class="fa fa-heartbeat text-sm text-light"></i>
+                        </div>
+                        <span class="font-semibold">智能康复辅助平台</span>
+                    </div>
+                    <div class="text-sm opacity-70 mt-1">科技赋能康复，智能改善生活</div>
+                </div>
+                
+                <div class="text-sm opacity-70">
+                    © 2023 智能康复辅助平台 - 基于AI的精准康复解决方案
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 背景装饰元素 -->
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+    </div>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 全局变量
+        let isTraining = false;
+        let isPaused = false;
+        let isCollecting = false;
+        let sessionCount = 0;
+        let accuracyRate = 0;
+        let shoulderAngle = 0;
+        let elbowAngle = 0;
+        let fps = 0;
+        let fpsCounter = 0;
+        let lastFpsTime = 0;
+        let samples = [];
+        let pose, camera;
+        let chartData = {
+            shoulder: [],
+            elbow: [],
+            timestamps: []
+        };
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 首次进入自动语音提示
+            setTimeout(() => {
+                try {
+                    const utter = new window.SpeechSynthesisUtterance('欢迎进入上肢康复动作矫正系统，请点击开始训练按钮。');
+                    utter.lang = 'zh-CN';
+                    utter.rate = 1;
+                    utter.volume = 1;
+                    window.speechSynthesis.speak(utter);
+                } catch(e) {}
+            }, 600);
+            // 初始化MediaPipe姿态检测
+            initMediaPipe();
+            
+            // 初始化图表
+            initCharts();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 开始FPS计数
+            startFpsCounter();
+        });
+        
+        // 初始化MediaPipe姿态检测
+        async function initMediaPipe() {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置画布尺寸
+            canvas.width = 640;
+            canvas.height = 480;
+            
+            try {
+                // 初始化MediaPipe Pose
+                pose = new Pose({locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+                }});
+                
+                pose.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                
+                pose.onResults(onPoseResults);
+                
+                // 初始化摄像头
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        await pose.send({image: video});
+                    },
+                    width: 640,
+                    height: 480
+                });
+                
+                camera.start();
+                
+                // 更新摄像头状态
+                document.getElementById('cameraStatus').className = 'w-3 h-3 rounded-full bg-green-500 mr-2 pulse-glow';
+                addFeedback('摄像头已启动，开始姿态检测', 'info');
+                
+            } catch (error) {
+                console.error('MediaPipe初始化失败:', error);
+                addFeedback('无法启动摄像头或姿态检测，请检查权限设置', 'error');
+            }
+        }
+        
+        // 处理MediaPipe姿态检测结果
+        function onPoseResults(results) {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const ctx = canvas.getContext('2d');
+            
+            // 更新FPS计数
+            updateFps();
+            
+            // 清空画布并绘制视频
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // 绘制姿态关键点和连接线
+            if (results.poseLandmarks) {
+                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FFAA', lineWidth: 3});
+                drawLandmarks(ctx, results.poseLandmarks, {color: '#FFB700', radius: 4});
+                
+                // 更新姿态检测状态
+                document.getElementById('poseStatus').className = 'w-3 h-3 rounded-full bg-green-500 mr-2 pulse-glow';
+                
+                // 计算关节角度
+                calculateJointAngles(results.poseLandmarks);
+                
+                // 采集数据
+                if (isCollecting) {
+                    collectPoseData(results.poseLandmarks);
+                }
+            } else {
+                document.getElementById('poseStatus').className = 'w-3 h-3 rounded-full bg-yellow-500 mr-2';
+            }
+        }
+        
+        // 计算关节角度并实时语音提示
+        let lastVoiceState = '';
+        let audioEnabled = false;
+        let speechSynthesisUtter = null;
+        function calculateJointAngles(landmarks) {
+            // 获取关键点索引
+            const LEFT_SHOULDER = 11;
+            const LEFT_ELBOW = 13;
+            const LEFT_WRIST = 15;
+            const RIGHT_SHOULDER = 12;
+            const RIGHT_ELBOW = 14;
+            const RIGHT_WRIST = 16;
+            // 计算肩关节角度（使用左肩作为示例）
+            const shoulderAngleRad = calculateAngle(
+                landmarks[LEFT_ELBOW],
+                landmarks[LEFT_SHOULDER],
+                {x: landmarks[LEFT_SHOULDER].x - 0.1, y: landmarks[LEFT_SHOULDER].y}
+            );
+            // 计算肘关节角度
+            const elbowAngleRad = calculateAngle(
+                landmarks[LEFT_SHOULDER],
+                landmarks[LEFT_ELBOW],
+                landmarks[LEFT_WRIST]
+            );
+            // 转换为角度
+            shoulderAngle = Math.round(shoulderAngleRad * 180 / Math.PI);
+            elbowAngle = Math.round(elbowAngleRad * 180 / Math.PI);
+            // 更新角度显示
+            document.getElementById('shoulderAngle').textContent = shoulderAngle + '°';
+            document.getElementById('elbowAngle').textContent = elbowAngle + '°';
+            // 更新图表数据
+            updateCharts();
+            // 检查是否完成一次动作
+            if (isTraining && !isPaused && shoulderAngle >= 85 && elbowAngle >= 130) {
+                completeRepetition();
+            }
+            // 实时语音提示逻辑
+            if (audioEnabled) {
+                let voiceState = '';
+                if (shoulderAngle < 30 && elbowAngle < 60) {
+                    voiceState = '请放下';
+                } else if (shoulderAngle > 70 && elbowAngle > 120) {
+                    voiceState = '请举手';
+                } else if (shoulderAngle > 40 && shoulderAngle < 70) {
+                    voiceState = '保持';
+                }
+                if (voiceState && voiceState !== lastVoiceState) {
+                    speakText(voiceState);
+                    lastVoiceState = voiceState;
+                }
+                if (!voiceState) {
+                    lastVoiceState = '';
+                }
+            }
+        }
+
+        // 语音播报函数，防止卡顿和重叠
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            if (speechSynthesisUtter) {
+                window.speechSynthesis.cancel();
+                speechSynthesisUtter = null;
+            }
+            speechSynthesisUtter = new window.SpeechSynthesisUtterance(text);
+            speechSynthesisUtter.lang = 'zh-CN';
+            speechSynthesisUtter.rate = 1.0;
+            window.speechSynthesis.speak(speechSynthesisUtter);
+        }
+        
+        // 计算三点形成的角度
+        function calculateAngle(pointA, pointB, pointC) {
+            const vectorBA = {x: pointA.x - pointB.x, y: pointA.y - pointB.y};
+            const vectorBC = {x: pointC.x - pointB.x, y: pointC.y - pointB.y};
+            
+            const dotProduct = vectorBA.x * vectorBC.x + vectorBA.y * vectorBC.y;
+            const magnitudeBA = Math.sqrt(vectorBA.x * vectorBA.x + vectorBA.y * vectorBA.y);
+            const magnitudeBC = Math.sqrt(vectorBC.x * vectorBC.x + vectorBC.y * vectorBC.y);
+            
+            const cosineAngle = dotProduct / (magnitudeBA * magnitudeBC);
+            return Math.acos(Math.max(-1, Math.min(1, cosineAngle)));
+        }
+        
+        // 初始化图表
+        function initCharts() {
+            const shoulderCanvas = document.querySelector('#shoulderChart canvas');
+            const elbowCanvas = document.querySelector('#elbowChart canvas');
+            
+            // 设置画布尺寸
+            shoulderCanvas.width = shoulderCanvas.parentElement.clientWidth;
+            shoulderCanvas.height = shoulderCanvas.parentElement.clientHeight;
+            
+            elbowCanvas.width = elbowCanvas.parentElement.clientWidth;
+            elbowCanvas.height = elbowCanvas.parentElement.clientHeight;
+            
+            // 初始化图表数据
+            chartData.timestamps = Array.from({length: 20}, (_, i) => i);
+            chartData.shoulder = Array(20).fill(0);
+            chartData.elbow = Array(20).fill(0);
+            
+            // 开始图表动画循环
+            requestAnimationFrame(drawCharts);
+        }
+        
+        // 绘制图表
+        function drawCharts() {
+            const shoulderCanvas = document.querySelector('#shoulderChart canvas');
+            const shoulderCtx = shoulderCanvas.getContext('2d');
+            const elbowCanvas = document.querySelector('#elbowChart canvas');
+            const elbowCtx = elbowCanvas.getContext('2d');
+            
+            // 绘制肩关节图表
+            drawChart(shoulderCtx, chartData.shoulder, '#64B5F6', '肩关节角度');
+            
+            // 绘制肘关节图表
+            drawChart(elbowCtx, chartData.elbow, '#10B981', '肘关节角度');
+            
+            // 继续动画循环
+            requestAnimationFrame(drawCharts);
+        }
+        
+        // 绘制单个图表
+        function drawChart(ctx, data, color, label) {
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            const padding = 20;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 水平网格线
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (height - 2 * padding) * i / 5;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // 垂直网格线
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width - 2 * padding) * i / 10;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+            }
+            
+            // 绘制数据线
+            if (data.length > 1) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                for (let i = 0; i < data.length; i++) {
+                    const x = padding + (width - 2 * padding) * i / (data.length - 1);
+                    const y = height - padding - (data[i] / 180) * (height - 2 * padding);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.stroke();
+            }
+            
+            // 绘制标签
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, width / 2, padding - 5);
+            
+            // 绘制Y轴标签
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 3; i++) {
+                const value = 60 * i;
+                const y = height - padding - (value / 180) * (height - 2 * padding);
+                ctx.fillText(value + '°', padding - 5, y + 4);
+            }
+        }
+        
+        // 更新图表数据
+        function updateCharts() {
+            // 添加新数据点
+            chartData.shoulder.push(shoulderAngle);
+            chartData.elbow.push(elbowAngle);
+            
+            // 移除旧数据点，保持固定长度
+            if (chartData.shoulder.length > 20) {
+                chartData.shoulder.shift();
+                chartData.elbow.shift();
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const enableAudioBtn = document.getElementById('enableAudio');
+            const selectExerciseBtn = document.getElementById('selectExercise');
+            const exportReportBtn = document.getElementById('exportReport');
+            const viewHistoryBtn = document.getElementById('viewHistory');
+            const resetChartsBtn = document.getElementById('resetCharts');
+            const exportChartsBtn = document.getElementById('exportCharts');
+            const collectBtn = document.getElementById('collectBtn');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (startBtn) startBtn.addEventListener('click', startTraining);
+            if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+            if (resetBtn) resetBtn.addEventListener('click', resetTraining);
+            if (enableAudioBtn) enableAudioBtn.addEventListener('click', toggleAudio);
+            if (selectExerciseBtn) selectExerciseBtn.addEventListener('click', selectExercise);
+            if (exportReportBtn) exportReportBtn.addEventListener('click', exportReport);
+            if (viewHistoryBtn) viewHistoryBtn.addEventListener('click', viewHistory);
+            if (resetChartsBtn) resetChartsBtn.addEventListener('click', resetCharts);
+            if (exportChartsBtn) exportChartsBtn.addEventListener('click', exportChartData);
+            if (collectBtn) collectBtn.addEventListener('click', toggleDataCollection);
+            if (sendBtn) sendBtn.addEventListener('click', sendData);
+        }
+        
+        // 开始训练
+        function startTraining() {
+            isTraining = true;
+            isPaused = false;
+            addFeedback('修炼已经开始，请按照标准动作进行训练', 'encouragement');
+            
+            document.getElementById('startBtn').innerHTML = '<i class="fa fa-play mr-2"></i>训练中...';
+            document.getElementById('startBtn').classList.remove('bg-accent');
+            document.getElementById('startBtn').classList.add('bg-green-500', 'hover:bg-green-600');
+        }
+        
+        // 暂停/继续训练
+        function togglePause() {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                addFeedback('训练已暂停', 'info');
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa fa-play mr-2"></i>继续';
+                document.getElementById('pauseBtn').classList.remove('bg-white/10');
+                document.getElementById('pauseBtn').classList.add('bg-accent', 'hover:bg-accent/80');
+            } else {
+                addFeedback('训练已继续', 'encouragement');
+                document.getElementById('pauseBtn').innerHTML = '<i class="fa fa-pause mr-2"></i>暂停';
+                document.getElementById('pauseBtn').classList.remove('bg-accent', 'hover:bg-accent/80');
+                document.getElementById('pauseBtn').classList.add('bg-white/10');
+            }
+        }
+        
+        // 重置训练
+        function resetTraining() {
+            isTraining = false;
+            isPaused = false;
+            shoulderAngle = 0;
+            elbowAngle = 0;
+            sessionCount = 0;
+            accuracyRate = 0;
+            
+            document.getElementById('shoulderAngle').textContent = '0°';
+            document.getElementById('elbowAngle').textContent = '0°';
+            document.getElementById('sessionCount').textContent = '0';
+            document.getElementById('accuracyRate').textContent = '0%';
+            document.getElementById('sessionProgress').style.width = '0%';
+            document.getElementById('accuracyProgress').style.width = '0%';
+            
+            document.getElementById('startBtn').innerHTML = '<i class="fa fa-play mr-2"></i>开始训练';
+            document.getElementById('startBtn').classList.remove('bg-green-500', 'hover:bg-green-600');
+            document.getElementById('startBtn').classList.add('bg-accent');
+            
+            document.getElementById('pauseBtn').innerHTML = '<i class="fa fa-pause mr-2"></i>暂停';
+            document.getElementById('pauseBtn').classList.remove('bg-accent', 'hover:bg-accent/80');
+            document.getElementById('pauseBtn').classList.add('bg-white/10');
+            
+            addFeedback('训练已重置', 'info');
+        }
+        
+        // 完成一次动作重复
+        function completeRepetition() {
+            sessionCount++;
+            accuracyRate = Math.min(accuracyRate + 5, 100);
+            
+            document.getElementById('sessionCount').textContent = sessionCount;
+            document.getElementById('accuracyRate').textContent = accuracyRate + '%';
+            
+            // 更新进度条
+            const sessionProgress = (sessionCount / 20) * 100;
+            const accuracyProgress = (accuracyRate / 100) * 100;
+            
+            document.getElementById('sessionProgress').style.width = sessionProgress + '%';
+            document.getElementById('accuracyProgress').style.width = accuracyProgress + '%';
+            
+            // 提供反馈
+            if (sessionCount < 20) {
+                addFeedback(`动作完成！当前完成 ${sessionCount}/20 次`, 'encouragement');
+            } else {
+                addFeedback('恭喜！今日训练目标已完成', 'success');
+            }
+        }
+        
+        // 切换语音提示
+        function toggleAudio() {
+            const button = document.getElementById('enableAudio');
+            audioEnabled = !audioEnabled;
+            if (audioEnabled) {
+                button.innerHTML = '<i class="fa fa-volume-off mr-2"></i>禁用语音提示';
+                button.classList.remove('bg-green-500', 'hover:bg-green-600');
+                button.classList.add('bg-white/10', 'hover:bg-white/20');
+                addFeedback('语音提示已启用', 'info');
+            } else {
+                button.innerHTML = '<i class="fa fa-volume-up mr-2"></i>启用语音提示';
+                button.classList.remove('bg-white/10', 'hover:bg-white/20');
+                button.classList.add('bg-green-500', 'hover:bg-green-600');
+                addFeedback('语音提示已禁用', 'info');
+                window.speechSynthesis.cancel();
+            }
+        }
+        
+        // 选择训练动作
+        function selectExercise() {
+            const exercises = ["抬手训练", "抓握训练", "屈伸训练", "旋转训练"];
+            const selected = prompt(`请选择训练动作:\n${exercises.map((ex, i) => `${i+1}. ${ex}`).join('\n')}`, "1");
+            
+            if (selected && exercises[parseInt(selected)-1]) {
+                addFeedback(`已选择: ${exercises[parseInt(selected)-1]}`, "encouragement");
+            }
+        }
+        
+        // 切换数据采集
+        function toggleDataCollection() {
+            isCollecting = !isCollecting;
+            
+            if (isCollecting) {
+                document.getElementById('collectBtn').innerHTML = '<i class="fa fa-database mr-2"></i>停止采集';
+                document.getElementById('collectBtn').classList.remove('bg-white/10');
+                document.getElementById('collectBtn').classList.add('bg-accent', 'hover:bg-accent/80');
+                document.getElementById('collectStatus').className = 'w-3 h-3 rounded-full bg-green-500 mr-2 pulse-glow';
+                addFeedback('数据采集已开始', 'info');
+            } else {
+                document.getElementById('collectBtn').innerHTML = '<i class="fa fa-database mr-2"></i>开始采集';
+                document.getElementById('collectBtn').classList.remove('bg-accent', 'hover:bg-accent/80');
+                document.getElementById('collectBtn').classList.add('bg-white/10');
+                document.getElementById('collectStatus').className = 'w-3 h-3 rounded-full bg-red-500 mr-2';
+                addFeedback('数据采集已停止', 'info');
+            }
+        }
+        
+        // 采集姿态数据
+        function collectPoseData(landmarks) {
+            // 扁平化姿态数据
+            const flattened = landmarks.flatMap(point => [point.x, point.y, point.z]);
+            
+            // 添加时间戳和标签
+            samples.push({
+                data: flattened,
+                timestamp: Date.now(),
+                label: 0 // 可根据训练动作设置不同标签
+            });
+            
+            // 更新样本计数
+            document.getElementById('sampleCount').textContent = `已采集: ${samples.length} 个样本`;
+        }
+        
+        // 发送数据到后端
+        async function sendData() {
+            if (samples.length === 0) {
+                addFeedback('没有数据可发送，请先采集数据', 'error');
+                return;
+            }
+            
+            addFeedback('正在发送数据到后端...', 'info');
+            
+            try {
+                // 准备训练数据
+                const X = samples.map(s => s.data);
+                const y = samples.map(s => s.label);
+                
+                const response = await fetch('http://127.0.0.1:8000/api/train', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({X, y})
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    addFeedback(`数据发送成功！后端返回: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    addFeedback('数据发送失败，请检查后端服务', 'error');
+                }
+            } catch (error) {
+                console.error('发送数据失败:', error);
+                addFeedback('数据发送失败，请检查网络连接', 'error');
+            }
+        }
+        
+        // 重置图表
+        function resetCharts() {
+            chartData.shoulder = Array(20).fill(0);
+            chartData.elbow = Array(20).fill(0);
+            addFeedback('图表已重置', 'info');
+        }
+        
+        // 导出图表数据
+        function exportChartData() {
+            alert("图表数据导出功能将在完整版中实现");
+        }
+        
+        // 导出报告
+        function exportReport() {
+            alert("训练报告导出功能将在完整版中实现");
+        }
+        
+        // 查看历史数据
+        function viewHistory() {
+            alert("历史数据查看功能将在完整版中实现");
+        }
+        
+        // 添加反馈消息
+        function addFeedback(message, type) {
+            const feedbackContainer = document.getElementById('feedbackContainer');
+            const feedbackItem = document.createElement('div');
+            
+            let icon = 'fa-info-circle';
+            let bgClass = 'bg-blue-500/20';
+            
+            if (type === 'encouragement') {
+                icon = 'fa-thumbs-up';
+                bgClass = 'bg-green-500/20';
+            } else if (type === 'error') {
+                icon = 'fa-exclamation-triangle';
+                bgClass = 'bg-red-500/20';
+            } else if (type === 'success') {
+                icon = 'fa-check-circle';
+                bgClass = 'bg-green-500/20';
+            }
+            
+            feedbackItem.className = `p-3 rounded-lg ${bgClass} mb-2 fade-in`;
+            feedbackItem.innerHTML = `<i class="fa ${icon} mr-2"></i>${message}`;
+            
+            feedbackContainer.innerHTML = '';
+            feedbackContainer.appendChild(feedbackItem);
+        }
+        
+        // 更新FPS计数
+        function updateFps() {
+            const now = performance.now();
+            fpsCounter++;
+            
+            if (now - lastFpsTime >= 1000) {
+                fps = Math.round((fpsCounter * 1000) / (now - lastFpsTime));
+                document.getElementById('fpsCounter').textContent = `FPS: ${fps}`;
+                fpsCounter = 0;
+                lastFpsTime = now;
+            }
+        }
+        
+        // 开始FPS计数
+        function startFpsCounter() {
+            setInterval(updateFps, 100);
+        }
+    </script>
+</body>
+</html>

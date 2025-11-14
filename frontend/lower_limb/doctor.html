@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="systemName">医生工作台 - 康复训练管理系统</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="../libs/tailwindcss/tailwindcss.js"></script>
+  <!-- 本地Font Awesome -->
+  <link href="../libs/font-awesome/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js -->
+  <script src="../libs/chart/chart.js"></script>
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0066CC',
+            secondary: '#1E88E5',
+            accent: '#64B5F6',
+            dark: '#0D47A1',
+            light: '#E3F2FD',
+            deep: '#0A3A7A',
+            med: '#1565C0',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-gradient {
+        background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+      }
+      .bg-grid {
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(10, 58, 122, 0.9), rgba(21, 101, 192, 0.7));
+        background-size: 20px 20px, 100% 100%;
+      }
+      .border-glow {
+        box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s infinite;
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 15px rgba(100, 181, 246, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(100, 181, 246, 0.8); }
+      }
+      .fade-in {
+        animation: fadeIn 1s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .slide-in {
+        animation: slideIn 0.5s ease-out;
+      }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden bg-grid">
+  <!-- 顶部装饰线条 -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+  
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 relative z-10">
+    <!-- 顶部导航 -->
+    <header class="flex justify-between items-center mb-8 fade-in">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3">
+          <i class="fa fa-heartbeat text-xl text-light"></i>
+        </div>
+        <div class="text-xl font-semibold" data-i18n="systemName">康复训练管理系统</div>
+      </div>
+      <div class="text-right">
+        <div class="text-sm opacity-80" data-i18n="doctorDashboard">医生工作台</div>
+        <!-- 语言切换按钮 -->
+        <button id="languageSwitch" class="mt-2 px-3 py-1 bg-accent hover:bg-accent/80 rounded text-sm transition-all duration-300">
+          <span data-i18n="switchToEnglish">English</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 返回按钮 -->
+    <button onclick="window.location.href='../index.html'" class="mb-6 px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium flex items-center">
+      <i class="fa fa-arrow-left mr-2"></i> <span data-i18n="backToHome">返回主页</span>
+    </button>
+    
+    <!-- 医生工作台内容 -->
+    <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold" data-i18n="doctorDashboard">医生工作台</h1>
+        <div class="text-right">
+          <div class="text-sm opacity-80" id="doctorName">张医生</div>
+          <div class="text-sm opacity-80" data-i18n="rehabDirector">康复科主任</div>
+        </div>
+      </div>
+      
+      <!-- 患者列表 -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold" data-i18n="patientList">患者列表</h2>
+          <div class="text-sm opacity-80" id="patientCount" data-i18n="totalPatients">共 0 位患者</div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="patientsContainer">
+          <!-- 患者卡片将通过JavaScript动态加载 -->
+        </div>
+        <div id="emptyState" class="text-center py-12">
+          <i class="fa fa-users text-4xl text-white/30 mb-4"></i>
+          <h3 class="text-xl font-medium mb-2" data-i18n="noPatientData">暂无患者数据</h3>
+          <p class="text-white/60 mb-6" data-i18n="addPatientPrompt">请添加患者或检查网络连接</p>
+          <button class="px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium" onclick="window.location.href='add-patient.html'">
+            <i class="fa fa-plus-circle mr-2"></i><span data-i18n="addFirstPatient">添加第一位患者</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 快速操作 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="quickActions">快速操作</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button class="bg-white/10 hover:bg-white/15 rounded-xl p-4 transition-all duration-300 flex flex-col items-center" 
+                  onclick="window.location.href='add-patient.html'">
+            <i class="fa fa-plus-circle text-2xl text-accent mb-2"></i>
+            <span class="font-medium" data-i18n="addPatient">添加患者</span>
+          </button>
+          <button class="bg-white/10 hover:bg-white/15 rounded-xl p-4 transition-all duration-300 flex flex-col items-center" 
+                  onclick="showReports()">
+            <i class="fa fa-line-chart text-2xl text-accent mb-2"></i>
+            <span class="font-medium" data-i18n="dataReports">数据报表</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 今日提醒 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-bold mb-4" data-i18n="todayReminders">今日提醒</h2>
+        <div class="bg-white/5 rounded-xl p-4" id="remindersContainer">
+          <!-- 提醒将通过JavaScript动态加载 -->
+        </div>
+        <div id="emptyReminders" class="text-center py-8">
+          <i class="fa fa-bell text-2xl text-white/30 mb-2"></i>
+          <p class="text-white/60" data-i18n="noRemindersToday">今日暂无提醒</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI分析报告模态框 -->
+    <div id="aiAnalysisModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden overflow-y-auto py-8">
+      <div class="bg-gradient-to-br from-deep to-med rounded-2xl p-6 w-full max-w-4xl mx-4 border border-accent/30 border-glow">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold" id="aiModalTitle" data-i18n="aiAnalysisReport">AI训练分析报告</h2>
+          <button onclick="closeAIAnalysisModal()" class="text-white/70 hover:text-white transition-colors">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-6 max-h-[80vh] overflow-y-auto pr-2">
+          <!-- 患者基本信息 -->
+          <div class="bg-white/5 rounded-xl p-4">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <div class="font-bold text-lg" id="aiPatientName">-</div>
+                <div class="text-sm opacity-80 mt-1" data-i18n="cnnAnalysis">基于CNN模型的运动分析报告</div>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-accent" id="aiAnalysisScore">-</div>
+                <div class="text-sm opacity-80" data-i18n="actionCompletion">动作完成度</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 关节角度偏差分析 -->
+          <div class="bg-white/5 rounded-xl p-4">
+            <h3 class="font-bold mb-3 text-lg" data-i18n="jointAngleAnalysis">关节角度偏差分析</h3>
+            <div class="space-y-3" id="jointAnalysisContainer">
+              <!-- 关节分析数据将通过JavaScript动态加载 -->
+            </div>
+          </div>
+          
+          <!-- 运动轨迹偏差 -->
+          <div class="bg-white/5 rounded-xl p-4">
+            <h3 class="font-bold mb-3 text-lg" data-i18n="trajectoryDeviation">运动轨迹偏差</h3>
+            <div class="bg-white/10 rounded-lg p-4 h-64 flex items-center justify-center">
+              <canvas id="trajectoryChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 进步幅度分析 -->
+          <div class="bg-white/5 rounded-xl p-4">
+            <h3 class="font-bold mb-3 text-lg" data-i18n="improvementAnalysis">进步幅度分析</h3>
+            <div class="bg-white/10 rounded-lg p-4 h-64">
+              <canvas id="improvementChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 训练推荐 -->
+          <div class="bg-white/5 rounded-xl p-4">
+            <h3 class="font-bold mb-3 text-lg" data-i18n="trainingRecommendations">训练推荐</h3>
+            <div class="space-y-3" id="trainingRecommendationsContainer">
+              <!-- 训练推荐数据将通过JavaScript动态加载 -->
+            </div>
+          </div>
+          
+          <!-- AI分析总结 -->
+          <div class="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/30">
+            <div class="flex items-center">
+              <i class="fa fa-info-circle text-accent mr-2"></i>
+              <span class="font-medium" data-i18n="aiSummary">AI分析总结:</span>
+            </div>
+            <div class="text-sm mt-1" id="aiSummary">-</div>
+          </div>
+          
+          <div class="pt-4 flex justify-end">
+            <button onclick="closeAIAnalysisModal()" class="px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium">
+              <span data-i18n="closeReport">关闭报告</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部信息 -->
+    <footer class="text-center pt-8 border-t border-white/10 fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center justify-center md:justify-start">
+            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-2">
+              <i class="fa fa-heartbeat text-sm text-light"></i>
+            </div>
+            <span class="font-semibold" data-i18n="systemName">康复训练管理系统</span>
+          </div>
+          <div class="text-sm opacity-70 mt-1" data-i18n="systemSlogan">科技赋能康复，智能改善生活</div>
+        </div>
+        
+        <div class="text-sm opacity-70" data-i18n="copyright">
+          © 2025 康复训练管理系统 - 基于AI的精准康复解决方案
+        </div>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- 背景装饰元素 -->
+  <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+    <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-accent/10 blur-3xl"></div>
+    <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-primary/20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-32 h-32 rounded-full bg-accent/5 blur-3xl"></div>
+  </div>
+
+  <script src="../static/js/common.js"></script>
+  <script src="../static/js/i18nManage.js"></script>
+
+  <script>
+    let patientsData = [];
+
+    // 显示消息提示
+    function showMessage(message, type = 'error') {
+        const existingMessage = document.querySelector('.message-toast');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        const messageEl = document.createElement('div');
+        messageEl.className = `message-toast fixed top-4 right-4 p-4 rounded-lg z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white shadow-lg`;
+        messageEl.textContent = message;
+        
+        document.body.appendChild(messageEl);
+        
+        setTimeout(() => {
+            messageEl.remove();
+        }, 3000);
+    }
+
+    // 获取认证头
+    function getAuthHeaders() {
+        const token = localStorage.getItem('access_token');
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    // 检查登录状态
+    function checkAuth() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        return true;
+    }
+
+    // 加载患者列表
+    async function loadPatients() {
+        if (!checkAuth()) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/patients`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (response.status === 401) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user_info');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            if (!response.ok) {
+                throw new Error(i18n.t('loadPatientListFailed'));
+            }
+            
+            patientsData = await response.json();
+            const patientsContainer = document.getElementById('patientsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const patientCount = document.getElementById('patientCount');
+            
+            if (patientsData.length === 0) {
+                patientsContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                patientCount.textContent = i18n.t('totalPatients', { count: 0 });
+            } else {
+                emptyState.classList.add('hidden');
+                patientCount.textContent = i18n.t('totalPatients', { count: patientsData.length });
+                renderPatients(patientsData);
+            }
+            
+            // 加载今日提醒
+            loadReminders();
+            
+        } catch (error) {
+            console.error('加载患者列表错误:', error);
+            showMessage(i18n.t('loadPatientListFailed'));
+        }
+    }
+
+    // 渲染患者列表
+    function renderPatients(patients) {
+        const container = document.getElementById('patientsContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        patients.forEach(patient => {
+            const statusClass = patient.status === '已完成' ? 'bg-green-500' : 'bg-accent';
+            const statusText = patient.status === '已完成' ? i18n.t('completed') : i18n.t('inProgress');
+            
+            const patientCard = `
+                <div class="bg-white/10 rounded-xl p-4 cursor-pointer hover:bg-white/15 transition-all duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-lg">${patient.name}</h3>
+                        <div class="flex flex-col items-end space-y-2">
+                            <span class="${statusClass} text-xs px-2 py-1 rounded-full">${statusText}</span>
+                            <button class="bg-warning hover:bg-warning/80 text-xs px-2 py-1 rounded transition-all duration-300" onclick="showAIAnalysis(${patient.patient_id})" style="display:none;">
+                                ${i18n.t('aianalysis')}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-sm opacity-80 mb-2">${i18n.t('patientID')}: ${patient.patient_code}</div>
+                    <div class="text-sm opacity-80 mb-3">${i18n.t('registerDate')}: ${patient.register_date}</div>
+                    <div class="flex justify-between text-sm">
+                        <div>
+                            <div class="font-medium">${patient.training_count}${i18n.currentLanguage === 'zh-CN' ? '次' : ''}</div>
+                            <div class="text-xs opacity-70">${i18n.t('trainingTimes')}</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">${patient.total_duration}</div>
+                            <div class="text-xs opacity-70">${i18n.t('totalHours')}</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">${patient.recovery_progress}</div>
+                            <div class="text-xs opacity-70">${i18n.t('recoveryRate')}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex space-x-2">
+                        <button class="flex-1 bg-accent hover:bg-accent/80 text-xs py-1 rounded transition-all duration-300" onclick="viewPatientDetails(${patient.patient_id})">
+                            ${i18n.t('details')}
+                        </button>
+                        <button class="flex-1 bg-secondary hover:bg-secondary/80 text-xs py-1 rounded transition-all duration-300" onclick="viewPatientOverview(${patient.patient_id})">
+                            ${i18n.t('overview')}
+                        </button>
+                        <button class="flex-1 bg-accent hover:bg-accent/80 text-xs py-1 rounded transition-all duration-300" onclick="viewPatientIndex(${patient.patient_id})">
+                            ${i18n.t('Index')}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += patientCard;
+        });
+    }
+
+    // 加载今日提醒
+    async function loadReminders() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/reminders/today`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (response.ok) {
+                const reminders = await response.json();
+                renderReminders(reminders);
+            }
+        } catch (error) {
+            console.error('加载提醒错误:', error);
+        }
+    }
+
+    // 渲染提醒
+    function renderReminders(reminders) {
+        const container = document.getElementById('remindersContainer');
+        const emptyReminders = document.getElementById('emptyReminders');
+        
+        if (!container || reminders.length === 0) {
+            container.innerHTML = '';
+            emptyReminders.classList.remove('hidden');
+            return;
+        }
+        
+        emptyReminders.classList.add('hidden');
+        
+        let remindersHTML = '';
+        reminders.forEach(reminder => {
+            remindersHTML += `
+                <div class="flex items-center mb-3">
+                    <i class="fa fa-bell text-accent mr-3"></i>
+                    <div>
+                        <div class="font-medium">${reminder.title}</div>
+                        <div class="text-sm opacity-80">${reminder.description}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = remindersHTML;
+    }
+
+    // 查看患者详情
+    function viewPatientDetails(patientId) {
+        window.location.href = `patient-details.html?patient_id=${patientId}`;
+    }
+
+    // 显示AI分析报告
+    async function showAIAnalysis(patientId) {
+        if (!checkAuth()) return;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/ai-analysis`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(i18n.t('loadAIAnalysisFailed'));
+            }
+            
+            const analysis = await response.json();
+            
+            // 更新AI分析模态框内容
+            document.getElementById('aiModalTitle').textContent = `${analysis.patient_name} - ${i18n.t('aiAnalysisReport')}`;
+            document.getElementById('aiPatientName').textContent = analysis.patient_name;
+            document.getElementById('aiAnalysisScore').textContent = analysis.overall_score + '%';
+            document.getElementById('aiSummary').textContent = analysis.ai_summary;
+            
+            // 渲染关节分析数据
+            renderJointAnalysis();
+            
+            // 渲染训练推荐
+            renderTrainingRecommendations();
+            
+            // 显示模态框
+            document.getElementById('aiAnalysisModal').classList.remove('hidden');
+            
+            // 初始化图表
+            initCharts(analysis);
+            
+        } catch (error) {
+            console.error('加载AI分析错误:', error);
+            showMessage(i18n.t('loadAIAnalysisFailed'));
+        }
+    }
+
+    // 渲染关节分析数据
+    function renderJointAnalysis() {
+        const container = document.getElementById('jointAnalysisContainer');
+        if (!container) return;
+        
+        const jointData = [
+            { name: 'leftKnee', value: 3.2, percentage: 32, color: 'warning' },
+            { name: 'rightKnee', value: 1.8, percentage: 18, color: 'success' },
+            { name: 'leftHip', value: 4.5, percentage: 45, color: 'warning' },
+            { name: 'rightHip', value: 6.1, percentage: 61, color: 'danger' }
+        ];
+        
+        let jointHTML = '';
+        jointData.forEach(joint => {
+            jointHTML += `
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm">${i18n.t(joint.name)}</span>
+                        <span class="text-sm font-bold text-${joint.color}">${joint.value}°</span>
+                    </div>
+                    <div class="w-full bg-white/20 rounded-full h-2">
+                        <div class="bg-${joint.color} h-2 rounded-full" style="width: ${joint.percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = jointHTML;
+    }
+
+    // 渲染训练推荐
+    function renderTrainingRecommendations() {
+        const container = document.getElementById('trainingRecommendationsContainer');
+        if (!container) return;
+        
+        const recommendations = [
+            {
+                type: 'keyTraining',
+                description: i18n.t('keyTrainingDesc'),
+                icon: 'fa-check-circle',
+                color: 'accent'
+            },
+            {
+                type: 'actionImprovement',
+                description: i18n.t('actionImprovementDesc'),
+                icon: 'fa-lightbulb-o',
+                color: 'success'
+            },
+            {
+                type: 'precautions',
+                description: i18n.t('precautionsDesc'),
+                icon: 'fa-exclamation-triangle',
+                color: 'warning'
+            }
+        ];
+        
+        let recommendationsHTML = '';
+        recommendations.forEach(rec => {
+            recommendationsHTML += `
+                <div class="flex items-start p-3 bg-${rec.color}/10 rounded-lg border border-${rec.color}/30">
+                    <i class="fa ${rec.icon} text-${rec.color} mr-2 mt-1"></i>
+                    <div>
+                        <div class="font-medium">${i18n.t(rec.type)}</div>
+                        <div class="text-sm opacity-80 mt-1">${rec.description}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = recommendationsHTML;
+    }
+
+    // 查看患者总览
+    function viewPatientOverview(patientId) {
+        window.location.href = `overview.html?patient_id=${patientId}`;
+    }
+
+    // 查看患者AI模型训练
+    function viewPatientIndex(patientId) {
+        window.location.href = `index.html?patient_id=${patientId}`;
+    }
+
+    // 关闭AI分析模态框
+    function closeAIAnalysisModal() {
+        document.getElementById('aiAnalysisModal').classList.add('hidden');
+    }
+
+    // 显示报告
+    function showReports() {
+        if (patientsData.length > 0) {
+            showAIAnalysis(patientsData[0].patient_id);
+        } else {
+            alert(i18n.t('noPatientDataForReport'));
+        }
+    }
+
+    // 初始化图表
+    function initCharts(analysis) {
+        // 轨迹偏差图表
+        const trajectoryCanvas = document.getElementById('trajectoryChart');
+        if (!trajectoryCanvas) {
+            console.error('未找到 trajectoryChart 图表容器');
+            return;
+        }
+        const trajectoryCtx = trajectoryCanvas.getContext('2d');
+
+        if (window.trajectoryChart && typeof window.trajectoryChart.destroy === 'function') {
+            window.trajectoryChart.destroy();
+        }
+        
+        window.trajectoryChart = new Chart(trajectoryCtx, {
+            type: 'line',
+            data: {
+                labels: i18n.currentLanguage === 'zh-CN' ? ['起始', '25%', '50%', '75%', '结束'] : ['Start', '25%', '50%', '75%', 'End'],
+                datasets: [
+                    {
+                        label: i18n.t('standardTrajectory'),
+                        data: [0, 25, 50, 75, 100],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: i18n.t('patientTrajectory'),
+                        data: [0, 20, 45, 70, 95],
+                        borderColor: '#64B5F6',
+                        backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 进步幅度图表
+        const improvementChart = document.getElementById('improvementChart');
+        if (!improvementChart) {
+            console.error('未找到 improvementChart 图表容器');
+            return;
+        }
+        const improvementCtx = improvementChart.getContext('2d');
+
+        if (window.improvementChart && typeof window.improvementChart.destroy === 'function') {
+            window.improvementChart.destroy();
+        }
+        
+        window.improvementChart = new Chart(improvementCtx, {
+            type: 'bar',
+            data: {
+                labels: i18n.currentLanguage === 'zh-CN' ? ['第1周', '第2周', '第3周', '第4周'] : ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: i18n.t('actionAccuracy'),
+                    data: analysis.improvement_data || [65, 72, 78, 86],
+                    backgroundColor: [
+                        'rgba(100, 181, 246, 0.7)',
+                        'rgba(100, 181, 246, 0.7)',
+                        'rgba(100, 181, 246, 0.7)',
+                        'rgba(100, 181, 246, 0.9)'
+                    ],
+                    borderColor: '#64B5F6',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded',async function() {
+        if (!checkAuth()) return;
+        
+        // 添加语言切换事件监听
+        document.getElementById('languageSwitch').addEventListener('click', switchLanguage);
+        
+        // 加载用户信息
+        const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+        if (userInfo.full_name) {
+            const doctorNameElement = document.getElementById('doctorName');
+            if (doctorNameElement) {
+                doctorNameElement.textContent = userInfo.full_name;
+            }
+        }
+         await i18n.init();
+        // 加载患者数据
+        loadPatients();
+        
+        document.body.classList.add('loaded');
+    });
+  </script>
+</body>
+</html>
