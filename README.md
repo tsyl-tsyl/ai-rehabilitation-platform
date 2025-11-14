@@ -1,4 +1,4 @@
-# AI Rehabilitation Training Platform
+[# AI Rehabilitation Training Platform
 
 ## Project Introduction
 This is an open-source platform integrating speech, AI, robotics, and multi-scenario rehabilitation training. It supports various rehabilitation programs such as upper limb, lower limb, and aphasia training. With a separation of front-end and back-end architecture, it provides multi-language support and hardware integration capabilities.
@@ -128,3 +128,4 @@ High School Affiliated to Renmin University of China
 
 > This platform aims to empower rehabilitation training with AI. Developers from medical, rehabilitation, and AI fields are welcome to contribute to the project!
 
+](https://bnstw.com/ai/frontend/index.html)
