@@ -117,25 +117,31 @@
       </div>
       
       <!-- 患者列表 -->
-      <div class="mb-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold" data-i18n="patientList">患者列表</h2>
-          <div class="text-sm opacity-80" id="patientCount" data-i18n="totalPatients">共 0 位患者</div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="patientsContainer">
-          <!-- 患者卡片将通过JavaScript动态加载 -->
-        </div>
-        <div id="emptyState" class="text-center py-12">
-          <i class="fa fa-users text-4xl text-white/30 mb-4"></i>
-          <h3 class="text-xl font-medium mb-2" data-i18n="noPatientData">暂无患者数据</h3>
-          <p class="text-white/60 mb-6" data-i18n="addPatientPrompt">请添加患者或检查网络连接</p>
-          <button class="px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium" onclick="window.location.href='add-patient.html'">
-            <i class="fa fa-plus-circle mr-2"></i><span data-i18n="addFirstPatient">添加第一位患者</span>
-          </button>
-        </div>
-      </div>
-      
-      <!-- 快速操作 -->
+<div class="mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold" data-i18n="patientList">患者列表</h2>
+    <div class="flex items-center space-x-4">
+      <div class="text-sm opacity-80" id="patientCount" data-i18n="totalPatients">共 0 位患者</div>
+      <!-- 添加患者按钮 -->
+      <button class="px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium flex items-center" 
+              onclick="window.location.href='add-patient.html'">
+        <i class="fa fa-plus-circle mr-2"></i><span data-i18n="addPatient">添加患者</span>
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="patientsContainer">
+    <!-- 患者卡片将通过JavaScript动态加载 -->
+  </div>
+  <div id="emptyState" class="text-center py-12">
+    <i class="fa fa-users text-4xl text-white/30 mb-4"></i>
+    <h3 class="text-xl font-medium mb-2" data-i18n="noPatientData">暂无患者数据</h3>
+    <p class="text-white/60 mb-6" data-i18n="addPatientPrompt">请添加患者或检查网络连接</p>
+    <button class="px-4 py-2 bg-accent hover:bg-accent/80 rounded-lg transition-all duration-300 font-medium" onclick="window.location.href='add-patient.html'">
+      <i class="fa fa-plus-circle mr-2"></i><span data-i18n="addFirstPatient">添加第一位患者</span>
+    </button>
+  </div>
+</div>
+      <!-- 快速操作 
       <div class="mb-6">
         <h2 class="text-xl font-bold mb-4" data-i18n="quickActions">快速操作</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,7 +156,7 @@
             <span class="font-medium" data-i18n="dataReports">数据报表</span>
           </button>
         </div>
-      </div>
+      </div>-->
       
       <!-- 今日提醒 -->
       <div class="mb-6">
@@ -306,7 +312,7 @@
     function checkAuth() {
         const token = localStorage.getItem('access_token');
         if (!token) {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
             return false;
         }
         return true;
@@ -324,7 +330,7 @@
             if (response.status === 401) {
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('user_info');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
                 return;
             }
             
@@ -580,7 +586,7 @@
 
     // 查看患者AI模型训练
     function viewPatientIndex(patientId) {
-        window.location.href = `index.html?patient_id=${patientId}`;
+        window.location.href = `lower_index.html?patient_id=${patientId}`;
     }
 
     // 关闭AI分析模态框

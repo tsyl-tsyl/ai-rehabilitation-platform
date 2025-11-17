@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="rehab_robot_title">康复机器人数据采集 - MobileNetV2 康复训练系统</title>
+    <!-- 使用本地 Tailwind CSS -->
+    <script src="../libs/tailwindcss/tailwindcss.js"></script>
+    <!-- 使用本地 Chart.js -->
+    <script src="../libs/chart/chart.js"></script>
+    <!-- 使用本地 Font Awesome -->
+    <link rel="stylesheet" href="../libs/font-awesome/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0066CC',
+                        secondary: '#1E88E5',
+                        accent: '#64B5F6',
+                        dark: '#0D47A1',
+                        light: '#E3F2FD',
+                        deep: '#0A3A7A',
+                        med: '#1565C0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-gradient {
+                background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%);
+            }
+            .border-glow {
+                box-shadow: 0 0 15px rgba(100, 181, 246, 0.5);
+            }
+            .fade-in {
+                animation: fadeIn 1s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+    
+    <style>
+        /* 进度条样式 */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 50%;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step-active .step-number {
+            background: #4facfe;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+        
+        .step-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .step-active .step-label {
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        /* 临时消息样式 */
+        .temp-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            animation-fill-mode: forwards;
+        }
+
+        .temp-message.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .temp-message.error {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .temp-message.info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* 数据可视化容器 */
+        .data-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: #000;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .data-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .data-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        /* 可视化区域布局 */
+        .visualization-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .chart-section, .gif-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-section {
+            border: 1px solid rgba(100, 181, 246, 0.3);
+        }
+
+        .gif-section {
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #64B5F6;
+        }
+
+        .gif-display {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .gif-placeholder {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .gif-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .action-gif {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+
+        /* 仪表盘样式 */
+        .gauge-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .gauge {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .gauge-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            height: 200px;
+        }
+
+        /* 动作按钮样式 */
+        .action-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .action-btn:hover::after {
+            left: 100%;
+        }
+
+        /* 加载指示器 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* 数据表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-deep to-med min-h-screen text-white overflow-x-hidden">
+    <!-- 顶部进度条 -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- 头部 -->
+        <header class="flex justify-between items-center mb-8 fade-in">
+            <div class="flex items-center">
+                <a href="../index.html" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3 hover:bg-white/20 transition-colors" title="返回首页">
+                    <i class="fas fa-home text-xl text-light"></i>
+                </a>
+                <div class="text-xl font-semibold" data-i18n="system_name">康复机器人数据采集系统</div>
+            </div>
+            <div class="flex items-center">
+                <div class="text-right mr-4">
+                    <div class="text-sm opacity-80" data-i18n="system_description">基于传感器数据的下肢康复训练采集平台</div>
+                </div>
+                <!-- 语言切换按钮 -->
+                <button id="languageSwitch" class="px-3 py-2 bg-accent hover:bg-accent/80 rounded-lg text-sm transition-all duration-300 flex items-center">
+                    <span data-i18n="switchToEnglish">English</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 进度指示器 -->
+        <div class="max-w-2xl mx-auto mb-8 fade-in">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-steps">
+                <div class="progress-step step-active" onclick="window.location.href='rehab_robot.html'">
+                    <div class="step-number">1</div>
+                    <div class="step-label" data-i18n="step1_data_collection">机器人数据采集</div>
+                </div>
+                <div class="progress-step" onclick="goToTraining()">
+                    <div class="step-number">2</div>
+                    <div class="step-label" data-i18n="step2_model_training">模型训练</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据采集面板 -->
+        <div class="card-gradient rounded-2xl p-6 shadow-lg border border-accent/30 border-glow fade-in">
+            <h2 class="text-2xl font-bold mb-4 text-center" data-i18n="robot_data_collection">🤖 康复机器人实时数据采集</h2>
+            
+            <!-- 数据可视化区域 - 并排布局 -->
+            <div class="visualization-container">
+                <!-- 左侧：原有的数据容器 -->
+                <div class="chart-section">
+                    <div class="section-title" data-i18n="robot_status">机器人状态监控</div>
+                    <div class="data-container" id="dataContainer">
+                        <div class="data-placeholder" id="dataPlaceholder">
+                            <i class="fas fa-robot"></i>
+                            <div data-i18n="robot_not_connected">机器人数据未连接</div>
+                            <div class="text-sm opacity-80 mt-2" data-i18n="click_to_connect">点击"连接机器人"开始采集</div>
+                        </div>
+                        <canvas id="motionChart" style="display: none; width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 右侧：GIF展示区域 -->
+                <div class="gif-section">
+                    <div class="section-title" data-i18n="exercise_demonstration">康复机器演示</div>
+                    <div class="gif-display">
+                        <div class="gif-placeholder" id="gifPlaceholder">
+                            <i class="fas fa-video"></i>
+                            <div data-i18n="select_exercise_to_view">选择训练动作查看演示</div>
+                        </div>
+                        <!-- 不同动作的GIF -->
+                        <img id="kneeFlexionGif" src="../static/gifs/knee_flexion.gif" class="action-gif" alt="康复机器演示">
+                        
+                    </div>
+                    <div class="mt-4 text-center text-sm opacity-70" data-i18n="gif_instruction" style="display:none;">
+                        当前动作演示将帮助您正确执行康复训练
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 my-6 justify-center">
+                <button id="robotConnectBtn" onclick="toggleRobotConnection()" class="btn btn-primary">
+                    <i class="fas fa-plug mr-2"></i><span data-i18n="connect_robot">连接机器人</span>
+                </button>
+                <button id="collectionToggle" onclick="toggleCollection()" disabled class="btn bg-white/10 hover:bg-white/20">
+                    <i class="fas fa-record-vinyl mr-2"></i><span data-i18n="start_collection">开始采集</span>
+                </button>
+                <button id="sendDataBtn" onclick="sendRobotDataToServer()" class="btn btn-secondary">
+                    <span id="sendDataText"><i class="fas fa-paper-plane mr-2"></i><span data-i18n="send_data">发送数据</span></span>
+                    <span id="sendDataLoader" class="loader hidden"></span>
+                </button>
+            </div>
+
+            <!-- 采集状态卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="collected_samples">已采集样本</div>
+                    <div class="text-2xl font-bold"><span id="collectedSamples">0</span> / <span id="targetSamples">100</span></div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="current_action">当前动作</div>
+                    <div class="text-xl font-bold" id="currentAction" data-i18n="not_selected">未选择</div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="connection_status">连接状态</div>
+                    <div class="text-xl font-bold" id="connectionStatus" data-i18n="not_connected">未连接</div>
+                </div>
+                <div class="bg-white/10 p-4 rounded-lg text-center">
+                    <div class="text-sm opacity-80 mb-1" data-i18n="data_quality">数据质量</div>
+                    <div class="text-xl font-bold" id="dataQuality">--</div>
+                </div>
+            </div>
+
+            <!-- 动作选择 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-center" data-i18n="select_rehab_exercise">选择康复训练动作</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button id="kneeFlexionBtn" onclick="setAction('knee_flexion_extension', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="knee_flexion">
+                        膝关节屈伸
+                    </button>
+                    <button id="hipAbductionBtn" onclick="setAction('hip_abduction_adduction', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="hip_abduction">
+                        髋关节外展
+                    </button>
+                    <button id="ankleDorsiflexionBtn" onclick="setAction('ankle_dorsiflexion', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="ankle_dorsiflexion">
+                        踝关节背屈
+                    </button>
+                    <button id="balanceTrainingBtn" onclick="setAction('balance_training', this)" class="action-btn py-3 px-4 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300" data-i18n="balance_training">
+                        平衡训练
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实时数据仪表盘 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-center" data-i18n="real_time_sensor_data">实时传感器数据</h3>
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <div class="text-sm opacity-80" data-i18n="knee_angle">膝关节角度</div>
+                        <div class="gauge-value" id="kneeAngle">0°</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill bg-green-500" id="kneeAngleBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="gauge">
+                        <div class="text-sm opacity-80" data-i18n="resistance_force">阻力强度</div>
+                        <div class="gauge-value" id="resistanceForce">0 N</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill bg-blue-500" id="resistanceForceBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="gauge">
+                        <div class="text-sm opacity-80" data-i18n="gait_symmetry">步态对称性</div>
+                        <div class="gauge-value" id="gaitSymmetry">0%</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill bg-yellow-500" id="gaitSymmetryBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="gauge">
+                        <div class="text-sm opacity-80" data-i18n="movement_smoothness">运动平滑度</div>
+                        <div class="gauge-value" id="movementSmoothness">0%</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill bg-purple-500" id="movementSmoothnessBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据预览 -->
+            <div class="bg-white/10 p-4 rounded-lg">
+                <h4 class="font-bold mb-3 text-center" data-i18n="real_time_data_stream">实时数据流</h4>
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="timestamp">时间戳</th>
+                                <th data-i18n="knee_angle">膝关节角度</th>
+                                <th data-i18n="resistance">阻力(N)</th>
+                                <th data-i18n="symmetry">对称性</th>
+                                <th data-i18n="smoothness">平滑度</th>
+                                <th data-i18n="rehab_stage">康复阶段</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataStream">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 opacity-60" data-i18n="waiting_for_data">等待数据采集...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/common.js"></script>
+    <script src="../static/js/i18nManage.js"></script>
+    
+    <script>
+        // 全局变量声明
+        let isConnected = false;
+        let isCollecting = false;
+        let collectedSamples = 0;
+        const targetSamples = 100;
+        let currentAction = '';
+        let robotDataBuffer = [];
+        let dataInterval = null;
+        
+        // 图表实例
+        let motionChart = null;
+        
+        // 康复机器人类别ID
+        const ROBOT_CATEGORY = 'lower_limb';
+
+        // ========== 国际化功能 ==========
+      
+
+        // ========== 页面跳转函数 ==========
+        function goToTraining() {
+            window.location.href = `../upper_limb/trantsf.html?category=${ROBOT_CATEGORY}`;
+        }
+
+        // ========== GIF显示控制 ==========
+        function showActionGif(action) {
+            // 隐藏所有GIF
+            document.querySelectorAll('.action-gif').forEach(gif => {
+                gif.style.display = 'none';
+            });
+            
+            // 隐藏占位符
+            const placeholder = document.getElementById('gifPlaceholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            
+            // 显示对应的GIF
+            const gifMap = {
+                'knee_flexion_extension': 'kneeFlexionGif',
+                'hip_abduction_adduction': 'hipAbductionGif',
+                'ankle_dorsiflexion': 'ankleDorsiflexionGif',
+                'balance_training': 'balanceTrainingGif'
+            };
+            
+            const gifId = gifMap[action];
+            if (gifId) {
+                const gifElement = document.getElementById(gifId);
+                if (gifElement) {
+                    gifElement.style.display = 'block';
+                    // 重新加载GIF以确保动画播放
+                    gifElement.src = gifElement.src;
+                }
+            }
+        }
+
+        // ========== 机器人连接控制 ==========
+        async function toggleRobotConnection() {
+            const connectBtn = document.getElementById('robotConnectBtn');
+            
+            if (!isConnected) {
+                await connectToRobot();
+            } else {
+                disconnectFromRobot();
+            }
+        }
+
+        async function connectToRobot() {
+            try {
+                const connectBtn = document.getElementById('robotConnectBtn');
+                const collectionBtn = document.getElementById('collectionToggle');
+                const statusElement = document.getElementById('connectionStatus');
+                const dataPlaceholder = document.getElementById('dataPlaceholder');
+                const motionCanvas = document.getElementById('motionChart');
+                
+                if (connectBtn) {
+                    connectBtn.disabled = true;
+                    connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + i18n.t('connecting');
+                }
+                
+                // 模拟连接延迟
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                isConnected = true;
+                
+                // 更新UI
+                if (connectBtn) {
+                    connectBtn.disabled = false;
+                    connectBtn.innerHTML = '<i class="fas fa-plug mr-2"></i>' + i18n.t('disconnect');
+                    connectBtn.classList.remove('btn-primary');
+                    connectBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                }
+                
+                if (collectionBtn) collectionBtn.disabled = false;
+                if (statusElement) {
+                    statusElement.textContent = i18n.t('connected');
+                    statusElement.className = 'text-xl font-bold text-green-400';
+                }
+                if (dataPlaceholder) dataPlaceholder.style.display = 'none';
+                if (motionCanvas) motionCanvas.style.display = 'block';
+                
+                // 初始化图表
+                initializeCharts();
+                
+                // 开始模拟数据流
+                startDataStream();
+                
+                showTemporaryMessage(i18n.t('robot_connected_success'), 'success');
+                
+            } catch (error) {
+                console.error('连接机器人失败:', error);
+                showTemporaryMessage(i18n.t('robot_connection_failed'), 'error');
+                resetConnectionState();
+            }
+        }
+
+        function disconnectFromRobot() {
+            stopDataStream();
+            
+            isConnected = false;
+            if (isCollecting) {
+                stopCollection();
+            }
+            
+            const connectBtn = document.getElementById('robotConnectBtn');
+            const collectionBtn = document.getElementById('collectionToggle');
+            const statusElement = document.getElementById('connectionStatus');
+            const dataPlaceholder = document.getElementById('dataPlaceholder');
+            const motionCanvas = document.getElementById('motionChart');
+            
+            if (connectBtn) {
+                connectBtn.innerHTML = '<i class="fas fa-plug mr-2"></i>' + i18n.t('connect_robot');
+                connectBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                connectBtn.classList.add('btn-primary');
+            }
+            
+            if (collectionBtn) collectionBtn.disabled = true;
+            if (statusElement) {
+                statusElement.textContent = i18n.t('not_connected');
+                statusElement.className = 'text-xl font-bold text-red-400';
+            }
+            if (dataPlaceholder) dataPlaceholder.style.display = 'block';
+            if (motionCanvas) motionCanvas.style.display = 'none';
+            
+            showTemporaryMessage(i18n.t('robot_disconnected'), 'info');
+        }
+
+        function resetConnectionState() {
+            const connectBtn = document.getElementById('robotConnectBtn');
+            if (connectBtn) {
+                connectBtn.disabled = false;
+                connectBtn.innerHTML = '<i class="fas fa-plug mr-2"></i>' + i18n.t('connect_robot');
+                connectBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                connectBtn.classList.add('btn-primary');
+            }
+        }
+
+        // ========== 数据采集控制 ==========
+        function toggleCollection() {
+            if (isCollecting) {
+                stopCollection();
+            } else {
+                startCollection();
+            }
+        }
+
+        function startCollection() {
+            if (!currentAction) {
+                showTemporaryMessage(i18n.t('select_exercise_first'), 'error');
+                return;
+            }
+            if (!isConnected) {
+                showTemporaryMessage(i18n.t('connect_robot_first'), 'error');
+                return;
+            }
+            
+            isCollecting = true;
+            collectedSamples = 0;
+            robotDataBuffer = [];
+            
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (collectionBtn) {
+                collectionBtn.innerHTML = '<i class="fas fa-stop mr-2"></i>' + i18n.t('stop_collection');
+                collectionBtn.classList.remove('bg-white/10', 'hover:bg-white/20');
+                collectionBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            }
+            
+            updateSamplesCounter();
+            showTemporaryMessage(i18n.t('start_collecting_data', {action: getActionName(currentAction)}), 'success');
+        }
+
+        function stopCollection() {
+            isCollecting = false;
+            
+            const collectionBtn = document.getElementById('collectionToggle');
+            if (collectionBtn) {
+                collectionBtn.innerHTML = '<i class="fas fa-record-vinyl mr-2"></i>' + i18n.t('start_collection');
+                collectionBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                collectionBtn.classList.add('bg-white/10', 'hover:bg-white/20');
+            }
+            
+            showTemporaryMessage(i18n.t('collection_stopped', {samples: collectedSamples}), 'info');
+        }
+
+        // ========== 数据流模拟 ==========
+        function startDataStream() {
+            // 清除之前的间隔
+            if (dataInterval) {
+                clearInterval(dataInterval);
+            }
+            
+            // 每秒生成10个数据点（100Hz模拟）
+            dataInterval = setInterval(generateRobotData, 100);
+        }
+
+        function stopDataStream() {
+            if (dataInterval) {
+                clearInterval(dataInterval);
+                dataInterval = null;
+            }
+        }
+
+        function generateRobotData() {
+            if (!isConnected) return;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            // 根据当前动作生成相应的数据模式
+            let baseAngle, angleRange, baseForce, forceRange;
+            
+            switch(currentAction) {
+                case 'knee_flexion_extension':
+                    baseAngle = 60;
+                    angleRange = 60;
+                    baseForce = 25;
+                    forceRange = 20;
+                    break;
+                case 'hip_abduction_adduction':
+                    baseAngle = 30;
+                    angleRange = 40;
+                    baseForce = 15;
+                    forceRange = 15;
+                    break;
+                case 'ankle_dorsiflexion':
+                    baseAngle = 10;
+                    angleRange = 30;
+                    baseForce = 10;
+                    forceRange = 10;
+                    break;
+                case 'balance_training':
+                    baseAngle = 5;
+                    angleRange = 10;
+                    baseForce = 5;
+                    forceRange = 5;
+                    break;
+                default:
+                    baseAngle = 45;
+                    angleRange = 45;
+                    baseForce = 20;
+                    forceRange = 15;
+            }
+            
+            // 生成模拟数据（带正弦波动）
+            const time = Date.now() / 1000;
+            const kneeAngle = baseAngle + Math.sin(time * 2) * angleRange / 2;
+            const resistanceForce = baseForce + Math.sin(time * 1.5) * forceRange / 2;
+            const gaitSymmetry = 80 + Math.sin(time) * 15; // 65-95%
+            const movementSmoothness = 85 + Math.cos(time * 0.8) * 10; // 75-95%
+            
+            // 估计康复阶段
+            const rehabStage = estimateRehabStage(kneeAngle, resistanceForce);
+            
+            // 创建数据包
+            const dataPacket = {
+                timestamp: timestamp,
+                knee_angle: Math.round(kneeAngle * 10) / 10,
+                resistance_force: Math.round(resistanceForce * 10) / 10,
+                gait_symmetry: Math.round(gaitSymmetry * 10) / 10,
+                movement_smoothness: Math.round(movementSmoothness * 10) / 10,
+                rehab_stage: rehabStage,
+                exercise_type: currentAction
+            };
+            
+            // 更新实时显示
+            updateRealTimeDisplay(dataPacket);
+            
+            // 如果正在采集，保存数据
+            if (isCollecting && currentAction) {
+                saveRobotData(dataPacket);
+            }
+            
+            // 更新图表数据
+            updateCharts(dataPacket);
+        }
+
+        function estimateRehabStage(angle, force) {
+            if (angle < 60 && force < 15) return 'initial';
+            if (angle < 90 && force < 30) return 'mid';
+            return 'advanced';
+        }
+
+        function saveRobotData(dataPacket) {
+            // 提取特征向量
+            const features = [
+                dataPacket.knee_angle,
+                dataPacket.resistance_force,
+                dataPacket.gait_symmetry,
+                dataPacket.movement_smoothness
+            ];
+            
+            const sample = {
+                timestamp: new Date().toISOString(),
+                features: features,
+                exercise_type: dataPacket.exercise_type,
+                rehab_stage: dataPacket.rehab_stage,
+                raw_data: dataPacket
+            };
+            
+            robotDataBuffer.push(sample);
+            collectedSamples++;
+            
+            // 更新计数器
+            updateSamplesCounter();
+            
+            // 如果达到目标样本数，自动停止
+            if (collectedSamples >= targetSamples) {
+                stopCollection();
+                showTemporaryMessage(`已成功采集 ${targetSamples} 个 ${getActionName(currentAction)} 样本！`, 'success');
+            }
+        }
+
+        // ========== UI 更新函数 ==========
+        function updateRealTimeDisplay(data) {
+            // 更新仪表盘
+            document.getElementById('kneeAngle').textContent = `${data.knee_angle}°`;
+            document.getElementById('resistanceForce').textContent = `${data.resistance_force} N`;
+            document.getElementById('gaitSymmetry').textContent = `${data.gait_symmetry}%`;
+            document.getElementById('movementSmoothness').textContent = `${data.movement_smoothness}%`;
+            
+            // 更新进度条
+            document.getElementById('kneeAngleBar').style.width = `${(data.knee_angle / 120) * 100}%`;
+            document.getElementById('resistanceForceBar').style.width = `${(data.resistance_force / 50) * 100}%`;
+            document.getElementById('gaitSymmetryBar').style.width = `${data.gait_symmetry}%`;
+            document.getElementById('movementSmoothnessBar').style.width = `${data.movement_smoothness}%`;
+            
+            // 更新数据质量
+            const qualityScore = (data.gait_symmetry + data.movement_smoothness) / 2;
+            const qualityElement = document.getElementById('dataQuality');
+            if (qualityElement) {
+                qualityElement.textContent = `${Math.round(qualityScore)}%`;
+                if (qualityScore > 85) qualityElement.className = 'text-xl font-bold text-green-400';
+                else if (qualityScore > 70) qualityElement.className = 'text-xl font-bold text-yellow-400';
+                else qualityElement.className = 'text-xl font-bold text-red-400';
+            }
+            
+            // 更新数据流表格
+            updateDataStreamTable(data);
+        }
+
+        function updateDataStreamTable(data) {
+            const tbody = document.getElementById('dataStream');
+            const newRow = `
+                <tr>
+                    <td>${data.timestamp}</td>
+                    <td>${data.knee_angle}°</td>
+                    <td>${data.resistance_force} N</td>
+                    <td>${data.gait_symmetry}%</td>
+                    <td>${data.movement_smoothness}%</td>
+                    <td>${data.rehab_stage}</td>
+                </tr>
+            `;
+            
+            if (tbody.innerHTML.includes('等待数据采集')) {
+                tbody.innerHTML = newRow;
+            } else {
+                tbody.innerHTML = newRow + tbody.innerHTML;
+            }
+            
+            // 限制显示行数
+            const rows = tbody.getElementsByTagName('tr');
+            if (rows.length > 10) {
+                tbody.removeChild(rows[rows.length - 1]);
+            }
+        }
+
+        function updateSamplesCounter() {
+            const collectedElement = document.getElementById('collectedSamples');
+            const targetElement = document.getElementById('targetSamples');
+            const currentActionElement = document.getElementById('currentAction');
+            
+            if (collectedElement) collectedElement.textContent = collectedSamples;
+            if (targetElement) targetElement.textContent = targetSamples;
+            if (currentActionElement) currentActionElement.textContent = getActionName(currentAction);
+        }
+
+        function getActionName(action) {
+            const actions = {
+                'knee_flexion_extension': i18n.t('knee_flexion'),
+                'hip_abduction_adduction': i18n.t('hip_abduction'),
+                'ankle_dorsiflexion': i18n.t('ankle_dorsiflexion'),
+                'balance_training': i18n.t('balance_training')
+            };
+            return actions[action] || i18n.t('not_selected');
+        }
+        
+        // ========== 图表初始化与更新 ==========
+        function initializeCharts() {
+            // 运动图表（3D效果模拟）
+            const motionCtx = document.getElementById('motionChart').getContext('2d');
+            motionChart = new Chart(motionCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 50}, (_, i) => i),
+                    datasets: [
+                        {
+                            label: '膝关节运动轨迹',
+                            data: Array(50).fill(60),
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 0
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            title: {
+                                display: true,
+                                text: '角度 (°)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            // 更新运动图表（模拟实时波形）
+            if (motionChart) {
+                const time = Date.now() / 1000;
+                const newData = Array.from({length: 50}, (_, i) => {
+                    return 60 + Math.sin(time + i * 0.2) * 30;
+                });
+                
+                motionChart.data.datasets[0].data = newData;
+                motionChart.update('none');
+            }
+        }
+
+        // ========== 数据发送 ==========
+        async function sendRobotDataToServer() {
+            if (!robotDataBuffer || robotDataBuffer.length === 0) {
+                showTemporaryMessage(i18n.t('no_data_to_send'), 'error');
+                return;
+            }
+            
+            const sendDataBtn = document.getElementById('sendDataBtn');
+            const sendDataText = document.getElementById('sendDataText');
+            const sendDataLoader = document.getElementById('sendDataLoader');
+            
+            if (sendDataBtn) sendDataBtn.disabled = true;
+            if (sendDataText) sendDataText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>' + i18n.t('sending');
+            if (sendDataLoader) sendDataLoader.classList.remove('hidden');
+            
+            const samplesToSend = robotDataBuffer.splice(0, robotDataBuffer.length);
+            
+            try {
+                const saveRes = await fetch(API_BASE_URL+'/save_pose_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: currentAction, 
+                        samples: samplesToSend,
+                        category: ROBOT_CATEGORY
+                    })
+                });
+                
+                if (!saveRes.ok) {
+                    throw new Error(`保存失败: ${saveRes.status}`);
+                }
+                
+                const result = await saveRes.json();
+                showTemporaryMessage(i18n.t('data_send_success'), 'success');
+                
+                // 跳转到训练页面
+                setTimeout(() => {
+                    window.location.href = `../upper_limb/trantsf.html?category=${ROBOT_CATEGORY}`;
+                }, 1000);
+                
+            } catch (err) {
+                console.error('发送机器人样本时出错:', err);
+                robotDataBuffer.unshift(...samplesToSend);
+                showTemporaryMessage(i18n.t('data_send_failed'), 'error');
+            } finally {
+                if (sendDataBtn) sendDataBtn.disabled = false;
+                if (sendDataText) sendDataText.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>' + i18n.t('send_data');
+                if (sendDataLoader) sendDataLoader.classList.add('hidden');
+            }
+        }
+
+        // ========== 动作选择 ==========
+        function setAction(action, btn) {
+            currentAction = action;
+            const currentActionElement = document.getElementById('currentAction');
+            if (currentActionElement) {
+                currentActionElement.textContent = getActionName(currentAction);
+            }
+            
+            // 更新按钮状态
+            document.querySelectorAll('.grid button').forEach(btn => {
+                btn.classList.remove('bg-accent');
+                btn.classList.add('bg-white/10');
+            });
+            if (btn && btn.classList) {
+                btn.classList.remove('bg-white/10');
+                btn.classList.add('bg-accent');
+            }
+            
+            // 显示对应的GIF
+            showActionGif(action);
+            
+            if (!isCollecting) {
+                showTemporaryMessage(i18n.t('action_selected', {action: getActionName(action)}), 'info');
+            }
+        }
+
+        // ========== 工具函数 ==========
+        function showTemporaryMessage(message, type = 'info') {
+            const existingMessages = document.querySelectorAll('.temp-message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `temp-message ${type}`;
+            messageElement.textContent = message;
+            document.body.appendChild(messageElement);
+            
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 3000);
+        }
+
+        // ========== 页面初始化 ==========
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('康复机器人数据采集页面加载完成');
+            
+            // 初始化国际化
+            await i18n.init();
+            
+            // 添加语言切换事件
+            document.getElementById('languageSwitch').addEventListener('click', switchLanguage);
+            
+            // 设置默认动作
+            setAction('knee_flexion_extension', document.getElementById('kneeFlexionBtn'));
+            
+            // 初始化样本计数器
+            updateSamplesCounter();
+        });
+
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            showTemporaryMessage('系统发生错误，请查看控制台', 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise拒绝:', e.reason);
+            showTemporaryMessage('系统发生错误，请查看控制台', 'error');
+        });
+    </script>
+</body>
+</html>
