@@ -1051,6 +1051,14 @@ function showAddStageModal() {
     // 设置默认日期
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('stageStartDate').value = today;
+
+    // 计算7天后的日期，赋值给 stageEndDate
+const sevenDaysLater = new Date();
+sevenDaysLater.setDate(sevenDaysLater.getDate() + 7); // 当前日期加7天
+const endDate = sevenDaysLater.toISOString().split('T')[0];
+document.getElementById('stageEndDate').value = endDate;
+document.getElementById('nextEvaluationDate').value = endDate;
+
     
     document.getElementById('addStageModal').classList.remove('hidden');
 }
