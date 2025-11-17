@@ -1,6 +1,6 @@
 class I18nService {
     constructor() {
-        this.currentLanguage = localStorage.getItem('languagePreference') || 'zh-CN';
+        this.currentLanguage = localStorage.getItem('languagePreference') || 'en-US';
         this.translations = {};
         this.isLoaded = false;
         this.translationCache = new Map();
@@ -200,8 +200,8 @@ class I18nService {
     async init() {
         // 从本地存储获取首选语言，或使用浏览器语言
         const savedLanguage = localStorage.getItem('languagePreference');
-        const browserLanguage = navigator.language || 'zh-CN';
-        const defaultLanguage = savedLanguage || (browserLanguage.startsWith('zh') ? 'zh-CN' : 'en-US');
+        const browserLanguage = navigator.language || 'en-US';
+        const defaultLanguage = savedLanguage || (browserLanguage.startsWith('zh') ? 'en-US' : 'zh-CN');
                
         await this.loadLanguage(defaultLanguage);
         this.updatePageText();
