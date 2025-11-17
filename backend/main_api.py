@@ -21,12 +21,12 @@ load_dotenv()
 
 # 配置常量
 class Config:
-    """应用配置类"""
-    DB_SERVER = os.getenv('DB_SERVER', '')
-    DB_NAME = os.getenv('DB_NAME', '')
-    DB_USERNAME = os.getenv('DB_USERNAME', '')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
-    DB_DRIVER = os.getenv('DB_DRIVER', '')
+    """应用配置类 database-1.c12mwksy0ewr.me-central-1.rds.amazonaws.com,1433""" 
+    DB_SERVER = os.getenv('DB_SERVER', 'localhost')
+    DB_NAME = os.getenv('DB_NAME', 'RehabilitationSystem')
+    DB_USERNAME = os.getenv('DB_USERNAME', 'sa')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'leadrich.cn2019')
+    DB_DRIVER = os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server')
     
     SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
     ALGORITHM = "HS256"
@@ -943,3 +943,134 @@ async def get_monthly_training_plan(
             status_code=500,
             detail=f"获取训练计划失败: {str(e)}"
         )
+
+def log_api_request(client_ip: str, method: str, endpoint: str, user_agent: str, query_params: str = None):
+    """记录API请求到数据库"""
+    try:
+        with db_manager.get_db_connection() as conn:
+            with db_manager.get_db_cursor(conn) as cursor:
+                insert_sql = """
+                INSERT INTO api_logs (client_ip, method, endpoint, request_time, user_agent, query_params)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """
+                cursor.execute(insert_sql, (
+                    client_ip,
+                    method,
+                    endpoint,
+                    TimeService.get_current_time(),
+                    user_agent,
+                    query_params
+                ))
+                
+                conn.commit()
+                return True
+    except Exception as e:
+        print(f"记录API日志失败: {e}")
+        return False
+
+# 创建中间件
+@app.middleware("http")
+async def log_requests_middleware(request: Request, call_next):
+    """记录所有API请求的中间件"""
+    
+    # 获取客户端IP
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # 获取请求信息
+    method = request.method
+    endpoint = request.url.path
+    user_agent = request.headers.get("user-agent", "")
+    
+    # 获取查询参数
+    query_params = str(dict(request.query_params)) if request.query_params else None
+    
+    # 记录到数据库
+    log_api_request(client_ip, method, endpoint, user_agent, query_params)
+    
+    # 继续处理请求
+    response = await call_next(request)
+    return response
+
+@app.get("/api_logs/recent")
+async def get_recent_api_logs(
+    limit: int = 50
+):
+    """获取最近的API日志"""
+    try:
+        with db_manager.get_db_cursor() as cursor:
+            recent_logs_sql = """
+            SELECT TOP (?) 
+                id, client_ip, method, endpoint, request_time, user_agent, query_params, created_at
+            FROM api_logs 
+            ORDER BY request_time DESC
+            """
+            
+            cursor.execute(recent_logs_sql, (limit,))
+            rows = cursor.fetchall()
+            
+            # 转换为字典列表
+            logs = []
+            for row in rows:
+                logs.append({
+                    'id': row[0],
+                    'client_ip': row[1],
+                    'method': row[2],
+                    'endpoint': row[3],
+                    'request_time': row[4].isoformat() if row[4] else None,
+                    'user_agent': row[5],
+                    'query_params': row[6],
+                    'created_at': row[7].isoformat() if row[7] else None
+                })
+            
+            return {
+                "status": "success",
+                "limit": limit,
+                "logs": logs
+            }
+            
+    except Exception as e:
+        print(f"获取API日志失败: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取日志失败: {str(e)}"
+        )
+
+from datetime import datetime, timezone, timedelta
+import pytz
+
+class TimeService:
+    """时间服务类"""
+    
+    @staticmethod
+    def get_current_time():
+        """获取当前时间（北京时间）"""
+        try:
+            # 优先使用pytz
+            beijing_tz = pytz.timezone('Asia/Shanghai')
+            return datetime.now(beijing_tz)
+        except:
+            # 备用方案
+            beijing_tz = timezone(timedelta(hours=8))
+            return datetime.now(beijing_tz)
+    
+    @staticmethod
+    def get_current_time_utc():
+        """获取当前UTC时间"""
+        return datetime.utcnow()
+    
+    @staticmethod
+    def format_time(dt, format_str="%Y-%m-%d %H:%M:%S"):
+        """格式化时间"""
+        if dt.tzinfo is None:
+            # 如果没有时区信息，假定为本地时间
+            return dt.strftime(format_str)
+        else:
+            # 有时区信息，转换为北京时间
+            beijing_tz = pytz.timezone('Asia/Shanghai')
+            localized_dt = dt.astimezone(beijing_tz)
+            return localized_dt.strftime(format_str)
+    
+    @staticmethod
+    def get_timestamp():
+        """获取时间戳（毫秒）"""
+        return int(datetime.utcnow().timestamp() * 1000)
